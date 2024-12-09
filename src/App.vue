@@ -6,6 +6,10 @@
           <stop offset="0%" style="stop-color:#646cff" />
           <stop offset="100%" style="stop-color:#a855f7" />
         </linearGradient>
+        <radialGradient id="glowGradient" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" style="stop-color:#a855f7" />
+          <stop offset="100%" style="stop-color:#646cff" />
+        </radialGradient>
       </defs>
     </svg>
     <div class="app-container">
@@ -13,35 +17,19 @@
         <div class="header-content">
           <div class="logo-title-wrapper">
             <svg class="logo-svg" width="80" height="80" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="60" cy="60" r="55" fill="none" stroke="#42b983" stroke-width="2">
-                <animate attributeName="stroke-dasharray" from="0,360" to="360,360" dur="3s" />
-                <animate attributeName="stroke-dashoffset" from="360" to="0" dur="3s" />
-              </circle>
-              
-              <g class="quantum-particles">
-                <circle cx="60" cy="25" r="3" fill="#42b983">
-                  <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="95" cy="60" r="3" fill="#42b983">
-                  <animate attributeName="opacity" values="0;1;0" dur="2s" begin="0.5s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="60" cy="95" r="3" fill="#42b983">
-                  <animate attributeName="opacity" values="0;1;0" dur="2s" begin="1s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="25" cy="60" r="3" fill="#42b983">
-                  <animate attributeName="opacity" values="0;1;0" dur="2s" begin="1.5s" repeatCount="indefinite" />
-                </circle>
-              </g>
-              
-              <path d="M60 35 L85 60 L60 85 L35 60 Z" fill="#42b983" opacity="0.8">
-                <animate attributeName="transform" attributeType="XML" 
-                         type="rotate" from="0 60 60" to="360 60 60" 
-                         dur="10s" repeatCount="indefinite"/>
-              </path>
-              
-              <circle cx="60" cy="60" r="30" fill="none" stroke="#42b983" stroke-width="1">
-                <animate attributeName="r" values="20;40;20" dur="3s" repeatCount="indefinite"/>
-                <animate attributeName="opacity" values="0.8;0;0.8" dur="3s" repeatCount="indefinite"/>
+              <circle 
+                cx="60" 
+                cy="60" 
+                r="50" 
+                fill="url(#glowGradient)"
+                class="glow-circle"
+              >
+                <animate 
+                  attributeName="opacity" 
+                  values="0.8;1;0.8" 
+                  dur="3s" 
+                  repeatCount="indefinite"
+                />
               </circle>
             </svg>
             
@@ -148,6 +136,7 @@ export default {
 .logo-svg {
   flex-shrink: 0;
   z-index: 1;
+  animation: float 4s ease-in-out infinite;
 }
 
 .title-container {
@@ -174,22 +163,8 @@ export default {
   letter-spacing: 2px;
 }
 
-.quantum-particles circle {
-  filter: drop-shadow(0 0 5px var(--primary-color));
-}
-
-.logo-svg {
-  animation: float 4s ease-in-out infinite;
-  filter: drop-shadow(0 0 10px rgba(100, 108, 255, 0.3));
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-10px) rotate(2deg);
-  }
+.glow-circle {
+  filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.6));
 }
 
 .app-wrapper {
