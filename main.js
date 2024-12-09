@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const path = require('path')
+const fs = require('fs')
 const { initGitService } = require('./services/gitService')
 const { saveData, loadData } = require('./services/storageService')
 
@@ -60,9 +61,44 @@ ipcMain.handle('save-tasks', async (event, tasks) => {
   return await saveData('tasks', tasks)
 })
 
-ipcMain.handle('select-directory', async () => {
+ipcMain.handle('dialog:selectDirectory', async () => {
   const result = await dialog.showOpenDialog({
     properties: ['openDirectory']
   })
-  return result.filePaths[0]
+  
+  if (!result.canceled) {
+    // 验证目录是否可写
+    try {
+      await fs.promises.access(result.filePaths[0], fs.constants.W_OK)
+      return result.filePaths[0]
+    } catch (err) {
+      throw new Error('所选目录没有写入权限')
+    }
+  }
+  return null
+})
+
+ipcMain.handle('settings:save', async (event, settings) => {
+  try {
+    // 保存设置到配置文件
+    const settingsPath = path.join(app.getPath('userData'), 'settings.json')
+    await fs.promises.writeFile(settingsPath, JSON.stringify(settings, null, 2))
+    return true
+  } catch (err) {
+    console.error('保存设置失败:', err)
+    throw err
+  }
+})
+
+ipcMain.handle('settings:load', async () => {
+  try {
+    const settingsPath = path.join(app.getPath('userData'), 'settings.json')
+    const data = await fs.promises.readFile(settingsPath, 'utf8')
+    return JSON.parse(data)
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return null // 文件不存在时返回 null
+    }
+    throw err
+  }
 }) 

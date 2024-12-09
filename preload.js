@@ -5,7 +5,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveTask: (task) => ipcRenderer.invoke('save-task', task),
   saveTasks: (tasks) => ipcRenderer.invoke('save-tasks', tasks),
   getGitLogs: (params) => ipcRenderer.invoke('get-git-logs', params),
-  selectDirectory: () => ipcRenderer.invoke('select-directory')
+  selectDirectory: () => ipcRenderer.invoke('dialog:selectDirectory'),
+  saveSettings: (settings) => ipcRenderer.invoke('settings:save', settings),
+  loadSettings: () => ipcRenderer.invoke('settings:load')
 })
 
 contextBridge.exposeInMainWorld('electron', {
