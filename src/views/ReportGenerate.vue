@@ -9,12 +9,19 @@
 
       <div class="config-grid">
         <div class="input-group">
-          <label>项目名称</label>
-          <input 
-            type="text" 
-            v-model="config.projectName"
-            placeholder="输入项目名称"
-          >
+          <label>项目目录</label>
+          <div class="directory-input">
+            <input 
+              type="text" 
+              v-model="config.projectPath"
+              placeholder="选择项目目录"
+              readonly
+            >
+            <button class="browse-button" @click="openDirectoryDialog">
+              <i class="folder-icon"></i>
+              浏览
+            </button>
+          </div>
         </div>
 
         <div class="input-group">
@@ -137,7 +144,7 @@ export default {
   data() {
     return {
       config: {
-        projectName: '',
+        projectPath: '',
         startDate: '',
         endDate: '',
         reportType: 'weekly',
@@ -196,6 +203,16 @@ export default {
         await new Promise(resolve => setTimeout(resolve, 1000))
         this.generationProgress = step.progress
         this.progressStatus = step.status
+      }
+    },
+    async openDirectoryDialog() {
+      try {
+        const { canceled, filePaths } = await window.electron.ipcRenderer.invoke('open-directory-dialog')
+        if (!canceled && filePaths.length > 0) {
+          this.config.projectPath = filePaths[0]
+        }
+      } catch (error) {
+        console.error('选择目录失败:', error)
       }
     }
   }
@@ -412,5 +429,41 @@ input:focus, select:focus, textarea:focus {
 
 .generate-icon {
   background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>');
+}
+
+.directory-input {
+  display: flex;
+  gap: 10px;
+}
+
+.directory-input input {
+  flex: 1;
+  cursor: default;
+  background: var(--input-bg);
+}
+
+.browse-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--primary-gradient);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.browse-button:hover {
+  box-shadow: 0 0 15px rgba(100, 108, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.folder-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>');
 }
 </style> 
