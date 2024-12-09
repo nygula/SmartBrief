@@ -16,7 +16,7 @@
       <div class="header-container">
         <div class="header-content">
           <div class="logo-title-wrapper">
-            <svg class="logo-svg" width="80" height="80" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <svg class="logo-svg" width="60" height="60" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
               <rect 
                 x="60" 
                 y="60" 
@@ -121,7 +121,7 @@ export default {
 }
 
 .header-container {
-  padding: 20px 0;
+  padding: 12px 0;
   background: var(--bg-dark);
 }
 
@@ -129,7 +129,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   position: relative;
   z-index: 2;
 }
@@ -141,6 +141,8 @@ export default {
 }
 
 .logo-svg {
+  width: 60px;
+  height: 60px;
   flex-shrink: 0;
   z-index: 1;
   animation: float 4s ease-in-out infinite;
@@ -158,7 +160,7 @@ export default {
   background: var(--primary-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-size: 2.5em;
+  font-size: 2em;
   font-weight: bold;
   font-family: "微软雅黑", sans-serif;
   text-shadow: 0 0 10px rgba(164, 85, 247, 0.3);
@@ -176,7 +178,7 @@ export default {
 
 .app-wrapper {
   min-height: 100vh;
-  padding: 20px;
+  padding: 12px;
   overflow-x: hidden;
   background: var(--bg-dark);
   color: var(--text-light);
@@ -204,7 +206,7 @@ export default {
   background: transparent;
   border: 2px solid var(--primary-color);
   color: var(--text-light);
-  padding: 8px 20px;
+  padding: 6px 16px;
   border-radius: 20px;
   cursor: pointer;
   font-size: 1em;
