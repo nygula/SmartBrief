@@ -23,4 +23,12 @@ ipcMain.handle('save-settings', async (event, settings) => {
 // 加载设置
 ipcMain.handle('load-settings', async () => {
   return store.get('settings')
+})
+
+// 添加 IPC 处理器
+ipcMain.handle('open-directory-dialog', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openDirectory']
+  })
+  return result
 }) 

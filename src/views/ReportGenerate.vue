@@ -30,11 +30,13 @@
             <input 
               type="date" 
               v-model="config.startDate"
+              @change="e => handleDateChange('start', e)"
             >
             <span class="date-separator">至</span>
             <input 
               type="date" 
               v-model="config.endDate"
+              @change="e => handleDateChange('end', e)"
             >
           </div>
         </div>
@@ -145,8 +147,8 @@ export default {
     return {
       config: {
         projectPath: '',
-        startDate: '',
-        endDate: '',
+        startDate: new Date().toISOString().split('T')[0],
+        endDate: new Date().toISOString().split('T')[0],
         reportType: 'weekly',
         includeCommits: true,
         includeTasks: true,
@@ -207,12 +209,30 @@ export default {
     },
     async openDirectoryDialog() {
       try {
-        const { canceled, filePaths } = await window.electron.ipcRenderer.invoke('open-directory-dialog')
-        if (!canceled && filePaths.length > 0) {
-          this.config.projectPath = filePaths[0]
+        if (window.electron) {
+          const { canceled, filePaths } = await window.electron.ipcRenderer.invoke('open-directory-dialog')
+          if (!canceled && filePaths.length > 0) {
+            this.config.projectPath = filePaths[0]
+          }
+        } else {
+          console.error('Electron IPC 不可用')
         }
       } catch (error) {
         console.error('选择目录失败:', error)
+      }
+    },
+    handleDateChange(type, event) {
+      const value = event.target.value
+      if (type === 'start') {
+        this.config.startDate = value
+        if (this.config.endDate < value) {
+          this.config.endDate = value
+        }
+      } else {
+        this.config.endDate = value
+        if (this.config.startDate > value) {
+          this.config.startDate = value
+        }
       }
     }
   }
@@ -465,5 +485,19 @@ input:focus, select:focus, textarea:focus {
   width: 16px;
   height: 16px;
   background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>');
+}
+
+.date-range input[type="date"] {
+  padding: 8px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text-light);
+  cursor: pointer;
+}
+
+.date-range input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
 }
 </style> 
