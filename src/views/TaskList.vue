@@ -140,472 +140,242 @@ export default {
   },
   methods: {
     addTask() {
-  <div class="task-list">
-    <div class="card">
-      <div class="header">
-        <h2>任务列表</h2>
-        <div class="task-stats">
-          <span>总任务: {{ tasks.length }}</span>
-          <span>已完成: {{ completedTasks }}</span>
-          <span>进行中: {{ inProgressTasks }}</span>
-        </div>
-      </div>
-      <div class="task-form">
-        <div class="form-group">
-          <label>任务名称</label>
-          <input v-model="newTask.name" placeholder="任务名称" class="input" />
-        </div>
-        <div class="form-group">
-          <label>优先级</label>
-          <select v-model="newTask.level" class="select">
-            <option value="高">高</option>
-            <option value="中">中</option>
-            <option value="低">低</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>工时(小时)</label>
-          <input 
-            v-model.number="newTask.hours" 
-            type="number" 
-            min="0.1" 
-            step="0.1"
-            placeholder="工时" 
-            class="input" 
-          />
-        </div>
-        <div class="form-group">
-          <label>进度</label>
-          <input 
-            v-model.number="newTask.progress" 
-            type="number" 
-            min="0" 
-            max="100" 
-            placeholder="进度%" 
-            class="input" 
-          />
-        </div>
-        <div class="form-group">
-          <label>备注</label>
-          <textarea v-model="newTask.notes" class="input textarea" placeholder="任务备注"></textarea>
-        </div>
-        <button 
-          @click="addTask" 
-          class="btn" 
-          :disabled="!isValidTask"
-          :title="!isValidTask ? '请填写必要信息' : '添加任务'"
-        >
-          添加任务
-        </button>
-      </div>
-
-      <div class="table-container">
-        <table class="task-table">
-          <thead>
-            <tr>
-              <th>任务名称</th>
-              <th>优先级</th>
-              <th>工时</th>
-              <th>进度</th>
-              <th>备注</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="task in tasks" :key="task.id">
-              <td>
-                <div class="task-name" @click="startEdit(task)">
-                  <span v-if="!task.editing">{{ task.name }}</span>
-                  <input
-                    v-else
-                    v-model="task.name"
-                    class="input"
-                    @blur="finishEdit(task)"
-                    @keyup.enter="finishEdit(task)"
-                    ref="editInput"
-                  />
-                </div>
-              </td>
-              <td>
-                <span class="priority" :class="task.level">{{ task.level }}</span>
-              </td>
-              <td>{{ task.hours }}h</td>
-              <td>
-                <div class="progress-bar">
-                  <div class="progress" :style="{ width: task.progress + '%' }"></div>
-                  <span>{{ task.progress }}%</span>
-                </div>
-              </td>
-              <td>
-                <div class="notes" @click="editNotes(task)">
-                  {{ task.notes || '暂无备注' }}
-                </div>
-              </td>
-              <td>
-                <button @click="deleteTask(task.id)" class="btn btn-danger">删除</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</template>
-
-<script>
-import { ref, onMounted, computed } from 'vue'
-import { useStore } from 'vuex'
-
-export default {
-  name: 'TaskList',
-  setup() {
-    const store = useStore()
-    const tasks = computed(() => store.state.tasks)
-    const newTask = ref({
-      name: '',
-      level: '中',
-      hours: 0,
-      progress: 0,
-      notes: '',
-      editing: false
-    })
-
-    const isValidTask = computed(() => {
-      const nameValid = newTask.value.name.trim().length > 0
-      const hoursValid = newTask.value.hours > 0
-      const progressValid = newTask.value.progress >= 0 && newTask.value.progress <= 100
-
-      console.log('表单验证详情:', {
-        nameValid,
-        hoursValid,
-        progressValid,
-        name: newTask.value.name,
-        hours: newTask.value.hours,
-        progress: newTask.value.progress
-      })
-
-      return nameValid && hoursValid && progressValid
-    })
-
-    const completedTasks = computed(() => {
-      return tasks.value.filter(task => task.progress === 100).length
-    })
-
-    const inProgressTasks = computed(() => {
-      return tasks.value.filter(task => task.progress < 100).length
-    })
-
-    onMounted(async () => {
-      try {
-        await store.dispatch('loadTasks')
-      } catch (error) {
-        console.error('加载任务失败:', error)
-        alert('加载任务失败，请刷新页面重试')
-      }
-    })
-
-    const addTask = async () => {
-      console.log('添加任务按钮被点击')
-      console.log('当前表单数据:', newTask.value)
-      console.log('表单验证结果:', isValidTask.value)
-      
-      if (!isValidTask.value) {
-        console.log('表单验证未通过，请检查：')
-        if (!newTask.value.name.trim()) {
-          alert('请输入任务名称')
-          return
-        }
-        if (newTask.value.hours <= 0) {
-          alert('工时必须大于0')
-          return
-        }
-        if (newTask.value.progress < 0 || newTask.value.progress > 100) {
-          alert('进度必须在0-100之间')
-          return
-        }
+      if (!this.newTask.name) {
+        alert('请输入任务名称')
         return
       }
       
       const task = {
         id: Date.now(),
-        ...newTask.value
+        ...this.newTask
       }
-      delete task.editing
-
-      try {
-        await store.dispatch('saveTask', task)
-        console.log('任务保存成功')
-        
-        // 重置表单
-        newTask.value = {
-          name: '',
-          level: '中',
-          hours: 0,
-          progress: 0,
-          notes: '',
-          editing: false
-        }
-      } catch (error) {
-        console.error('添加任务失败:', error)
-        alert('添加任务失败，请重试')
+      
+      this.tasks.push(task)
+      
+      // 重置表单
+      this.newTask = {
+        name: '',
+        priority: '中',
+        hours: 0,
+        progress: 0,
+        notes: ''
       }
-    }
-
-    const startEdit = (task) => {
-      task.editing = true
-      task._previousName = task.name
-      setTimeout(() => {
-        const input = document.querySelector(`.task-name input`)
-        if (input) input.focus()
-      })
-    }
-
-    const finishEdit = async (task) => {
-      if (!task.name.trim()) {
-        task.name = task._previousName
-      }
-      task.editing = false
-      delete task._previousName
-      try {
-        await store.dispatch('saveTasks', [...tasks.value])
-        tasks.value = store.state.tasks
-      } catch (error) {
-        console.error('保存任务失败:', error)
-        alert('保存任务失败，请重试')
-      }
-    }
-
-    const editNotes = (task) => {
-      const notes = prompt('编辑任务备注:', task.notes)
-      if (notes !== null) {
-        task.notes = notes
-        store.dispatch('saveTasks', [...tasks.value])
-          .then(() => {
-            tasks.value = store.state.tasks
-          })
-          .catch(error => {
-            console.error('保存备注失败:', error)
-            alert('保存备注失败，请重试')
-          })
-      }
-    }
-
-    const deleteTask = async (taskId) => {
-      if (!confirm('确定要删除这个任务吗？')) return
-      const updatedTasks = tasks.value.filter(t => t.id !== taskId)
-      try {
-        await store.dispatch('saveTasks', updatedTasks)
-        tasks.value = store.state.tasks
-      } catch (error) {
-        console.error('删除任务失败:', error)
-        alert('删除任务失败，请重试')
-      }
-    }
-
-    return {
-      tasks,
-      newTask,
-      addTask,
-      deleteTask,
-      startEdit,
-      finishEdit,
-      editNotes,
-      isValidTask,
-      completedTasks,
-      inProgressTasks
+    },
+    deleteTask(taskId) {
+      this.tasks = this.tasks.filter(task => task.id !== taskId)
     }
   }
 }
 </script>
 
 <style scoped>
-.card {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
+.task-list-container {
   padding: 20px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--bg-dark);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
+/* 任务统计样式 */
 .task-stats {
   display: flex;
   gap: 20px;
-}
-
-.task-stats span {
-  padding: 5px 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  font-size: 0.9em;
-}
-
-.task-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
   margin-bottom: 30px;
+  padding: 15px;
+  background: rgba(100, 108, 255, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(100, 108, 255, 0.2);
 }
 
-.form-group {
-  flex: 1;
-  min-width: 200px;
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  color: #42b983;
+.stat-label {
+  color: var(--text-light);
+  font-size: 0.9em;
 }
 
-.textarea {
-  min-height: 60px;
-  resize: vertical;
+.stat-value {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: var(--primary-color);
+  text-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
 }
 
-.input, .select {
-  padding: 10px 15px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+/* 新任务输入区域样式 */
+.new-task-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  color: var(--text-light);
+  font-size: 0.9em;
+}
+
+input, select {
+  padding: 10px;
+  background: var(--input-bg);
+  border: 2px solid var(--border-color);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  color: var(--text-light);
+  transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
   outline: none;
-  transition: all 0.3s ease;
-  width: 100%;
 }
 
-.task-name {
-  cursor: pointer;
-}
-
-.notes {
-  cursor: pointer;
-  color: #999;
-  font-size: 0.9em;
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.notes:hover {
-  color: #42b983;
-}
-
-.btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  background: #42b983;
+.add-task-button {
+  background: var(--primary-gradient);
   color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  justify-self: start;
+  align-self: end;
+}
+
+.add-task-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(100, 108, 255, 0.4);
+}
+
+/* 任务列表样式 */
+.tasks-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.section-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr 2fr 1fr;
+  padding: 15px;
+  background: var(--primary-gradient);
+  color: white;
+  font-weight: 500;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.task-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr 2fr 1fr;
+  padding: 15px;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
   transition: all 0.3s ease;
 }
 
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(66, 185, 131, 0.3);
+.task-item:hover {
+  background: rgba(100, 108, 255, 0.1);
+  transform: translateX(5px);
 }
 
-.btn-danger {
-  background: #ff6b6b;
-}
-
-.table-container {
-  overflow-x: auto;
-}
-
-.task-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 8px;
-}
-
-.task-table th {
-  padding: 15px;
-  text-align: left;
-  color: #42b983;
-}
-
-.task-table td {
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.task-table tr td:first-child {
-  border-radius: 8px 0 0 8px;
-}
-
-.task-table tr td:last-child {
-  border-radius: 0 8px 8px 0;
-}
-
-.priority {
-  padding: 4px 8px;
-  border-radius: 4px;
+.priority-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
   font-size: 0.9em;
+  font-weight: 500;
 }
 
-.priority.高 {
-  background: #ff6b6b;
+.priority-badge.高 {
+  background: rgba(255, 68, 68, 0.2);
+  color: #ff4444;
 }
 
-.priority.中 {
-  background: #ffd93d;
-  color: #333;
+.priority-badge.中 {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
 }
 
-.priority.低 {
-  background: #6c5ce7;
+.priority-badge.低 {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
 }
 
 .progress-bar {
+  width: 100%;
+  height: 8px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  height: 20px;
-  position: relative;
+  border-radius: 4px;
   overflow: hidden;
 }
 
-.progress {
-  background: #42b983;
+.progress-fill {
   height: 100%;
+  background: var(--primary-gradient);
   transition: width 0.3s ease;
 }
 
-.progress-bar span {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.progress-fill.completed {
+  background: #28a745;
+}
+
+.progress-text {
+  font-size: 0.9em;
+  color: var(--text-light);
+  margin-left: 8px;
+}
+
+.delete-button {
+  padding: 6px 12px;
+  background: #ff4444;
   color: white;
-  font-size: 0.8em;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-  transform: none;
+.delete-button:hover {
+  background: #ff2020;
+  transform: scale(1.1);
 }
 
-.btn:disabled:hover {
-  box-shadow: none;
-  transform: none;
+/* 动画效果 */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
 }
 
-/* 添加输入验证的视觉反馈 */
-.input:invalid {
-  border-color: #ff6b6b;
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
 }
 
-.input:focus {
-  border-color: #42b983;
-  box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
+.plus-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>');
 }
 </style> 
