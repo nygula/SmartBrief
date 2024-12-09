@@ -209,16 +209,16 @@ export default {
     },
     async openDirectoryDialog() {
       try {
-        if (window.electron) {
-          const { canceled, filePaths } = await window.electron.ipcRenderer.invoke('open-directory-dialog')
-          if (!canceled && filePaths.length > 0) {
-            this.config.projectPath = filePaths[0]
+        if (window.electron && window.electron.ipcRenderer) {
+          const result = await window.electron.ipcRenderer.invoke('dialog:selectDirectory');
+          if (!result.canceled && result.filePaths.length > 0) {
+            this.config.projectPath = result.filePaths[0];
           }
         } else {
-          console.error('Electron IPC 不可用')
+          console.error('Electron IPC 不可用');
         }
       } catch (error) {
-        console.error('选择目录失败:', error)
+        console.error('选择目录失败:', error);
       }
     },
     handleDateChange(type, event) {

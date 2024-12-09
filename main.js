@@ -11,7 +11,7 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js')
     }
@@ -64,19 +64,18 @@ ipcMain.handle('save-tasks', async (event, tasks) => {
 ipcMain.handle('dialog:selectDirectory', async () => {
   const result = await dialog.showOpenDialog({
     properties: ['openDirectory']
-  })
-  
+  });
+
   if (!result.canceled) {
-    // 验证目录是否可写
     try {
-      await fs.promises.access(result.filePaths[0], fs.constants.W_OK)
-      return result.filePaths[0]
+      await fs.promises.access(result.filePaths[0], fs.constants.W_OK);
+      return { canceled: false, filePaths: result.filePaths };
     } catch (err) {
-      throw new Error('所选目录没有写入权限')
+      throw new Error('所选目录没有写入权限');
     }
   }
-  return null
-})
+  return { canceled: true, filePaths: [] };
+});
 
 ipcMain.handle('settings:save', async (event, settings) => {
   try {
