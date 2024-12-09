@@ -1,6 +1,7 @@
-const { ipcMain, dialog } = require('electron')
+const { ipcMain, dialog, BrowserWindow } = require('electron')
 const Store = require('electron-store')
 const store = new Store()
+const path = require('path')
 
 // 选择目录
 ipcMain.handle('show-directory-picker', async () => {
@@ -31,4 +32,14 @@ ipcMain.handle('open-directory-dialog', async () => {
     properties: ['openDirectory']
   })
   return result
+})
+
+const mainWindow = new BrowserWindow({
+  width: 1200,
+  height: 800,
+  webPreferences: {
+    nodeIntegration: false,
+    contextIsolation: true,
+    preload: path.join(__dirname, 'preload.js')
+  }
 }) 

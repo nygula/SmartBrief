@@ -243,16 +243,20 @@ export default {
 
   async mounted() {
     try {
-      const savedSettings = await window.electronAPI.loadSettings()
-      if (savedSettings) {
-        this.settings = {
-          ...this.settings,
-          ...savedSettings,
-          api: {
-            ...this.settings.api,
-            ...savedSettings.api
+      if (window.electronAPI) {
+        const savedSettings = await window.electronAPI.loadSettings()
+        if (savedSettings) {
+          this.settings = {
+            ...this.settings,
+            ...savedSettings,
+            api: {
+              ...this.settings.api,
+              ...savedSettings.api
+            }
           }
         }
+      } else {
+        console.warn('electronAPI 不可用')
       }
     } catch (err) {
       console.error('加载设置失败:', err)
