@@ -1,4 +1,145 @@
 <template>
+  <div class="task-list-container">
+    <!-- 任务统计 -->
+    <div class="task-stats">
+      <div class="stat-item">
+        <span class="stat-label">总任务:</span>
+        <span class="stat-value">{{ totalTasks }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">已完成:</span>
+        <span class="stat-value">{{ completedTasks }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">进行中:</span>
+        <span class="stat-value">{{ inProgressTasks }}</span>
+      </div>
+    </div>
+
+    <!-- 新任务输入区域 -->
+    <div class="new-task-section">
+      <div class="input-group">
+        <label>任务名称</label>
+        <input 
+          type="text" 
+          v-model="newTask.name"
+          placeholder="输入任务名称"
+        >
+      </div>
+      
+      <div class="input-group">
+        <label>优先级</label>
+        <select v-model="newTask.priority">
+          <option value="低">低</option>
+          <option value="中">中</option>
+          <option value="高">高</option>
+        </select>
+      </div>
+      
+      <div class="input-group">
+        <label>工时(小时)</label>
+        <input 
+          type="number" 
+          v-model="newTask.hours"
+          min="0"
+        >
+      </div>
+      
+      <div class="input-group">
+        <label>进度</label>
+        <input 
+          type="number" 
+          v-model="newTask.progress"
+          min="0" 
+          max="100"
+        >
+      </div>
+      
+      <div class="input-group">
+        <label>备注</label>
+        <input 
+          type="text" 
+          v-model="newTask.notes"
+          placeholder="添加备注信息"
+        >
+      </div>
+
+      <button @click="addTask" class="add-task-button">
+        <i class="plus-icon"></i>
+        添加任务
+      </button>
+    </div>
+
+    <!-- 任务列表 -->
+    <div class="tasks-section">
+      <div class="section-header">
+        <div class="header-item name">任务名称</div>
+        <div class="header-item priority">优先级</div>
+        <div class="header-item hours">工时</div>
+        <div class="header-item progress">进度</div>
+        <div class="header-item notes">备注</div>
+        <div class="header-item actions">操作</div>
+      </div>
+
+      <transition-group name="list" tag="div" class="task-list">
+        <div v-for="task in tasks" :key="task.id" class="task-item">
+          <div class="task-name">{{ task.name }}</div>
+          <div class="task-priority">
+            <span :class="['priority-badge', task.priority]">
+              {{ task.priority }}
+            </span>
+          </div>
+          <div class="task-hours">{{ task.hours }}h</div>
+          <div class="task-progress">
+            <div class="progress-bar">
+              <div 
+                class="progress-fill"
+                :style="{ width: task.progress + '%' }"
+                :class="{ completed: task.progress === 100 }"
+              ></div>
+            </div>
+            <span class="progress-text">{{ task.progress }}%</span>
+          </div>
+          <div class="task-notes">{{ task.notes }}</div>
+          <div class="task-actions">
+            <button @click="deleteTask(task.id)" class="delete-button">
+              删除
+            </button>
+          </div>
+        </div>
+      </transition-group>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'TaskList',
+  data() {
+    return {
+      tasks: [],
+      newTask: {
+        name: '',
+        priority: '中',
+        hours: 0,
+        progress: 0,
+        notes: ''
+      }
+    }
+  },
+  computed: {
+    totalTasks() {
+      return this.tasks.length
+    },
+    completedTasks() {
+      return this.tasks.filter(task => task.progress === 100).length
+    },
+    inProgressTasks() {
+      return this.tasks.filter(task => task.progress < 100).length
+    }
+  },
+  methods: {
+    addTask() {
   <div class="task-list">
     <div class="card">
       <div class="header">

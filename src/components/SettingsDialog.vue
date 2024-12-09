@@ -1,128 +1,165 @@
 <template>
-  <div v-if="modelValue" class="settings-dialog">
-    <div class="dialog-content">
-      <h2>系统设置</h2>
-      
-      <!-- 数据目录设置 -->
-      <div class="setting-section">
-        <h3>基础设置</h3>
-        <div class="setting-item">
-          <label>数据保存目录：</label>
-          <div class="directory-selector">
-            <input 
-              type="text" 
-              v-model="settings.dataDirectory" 
-              readonly 
-              placeholder="请选择数据保存目录"
-            >
-            <button @click="selectDirectory" class="secondary-button">选择目录</button>
-          </div>
+  <transition name="dialog-fade">
+    <div v-if="modelValue" class="settings-dialog">
+      <div class="dialog-backdrop" @click="$emit('update:modelValue', false)"></div>
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <h2>
+            <i class="settings-icon-animated"></i>
+            系统设置
+          </h2>
+          <button class="close-button" @click="$emit('update:modelValue', false)">
+            <span>×</span>
+          </button>
         </div>
-      </div>
-
-      <!-- API 配置部分 -->
-      <div class="setting-section">
-        <h3>AI 模型配置</h3>
         
-        <!-- API 基础信息 -->
-        <div class="setting-item">
-          <label>API 名称：</label>
-          <input 
-            type="text" 
-            v-model="settings.api.name"
-            placeholder="例如：ChatGPT API"
-          >
-        </div>
-
-        <div class="setting-item">
-          <label>请求 URL：</label>
-          <input 
-            type="text" 
-            v-model="settings.api.url"
-            placeholder="输入完整的 API URL"
-          >
-        </div>
-
-        <!-- Headers 配置 -->
-        <div class="setting-item">
-          <label>Headers：</label>
-          <div class="headers-container">
-            <div v-for="(header, index) in settings.api.headers" 
-                 :key="index" 
-                 class="header-item">
-              <input 
-                type="text" 
-                v-model="header.key"
-                placeholder="Key"
-                class="header-input"
-              >
-              <input 
-                type="text" 
-                v-model="header.value"
-                placeholder="Value"
-                class="header-input"
-              >
-              <button 
-                @click="removeHeader(index)"
-                class="delete-button"
-              >×</button>
+        <div class="dialog-body">
+          <!-- 数据目录设置 -->
+          <div class="setting-section">
+            <div class="section-header">
+              <i class="folder-icon"></i>
+              <h3>基础设置</h3>
             </div>
-            <button 
-              @click="addHeader"
-              class="secondary-button add-button"
-            >添加 Header</button>
+            <div class="setting-item">
+              <label>数据保存目录：</label>
+              <div class="directory-selector">
+                <input 
+                  type="text" 
+                  v-model="settings.dataDirectory" 
+                  readonly 
+                  placeholder="请选择数据保存目录"
+                >
+                <button @click="selectDirectory" class="secondary-button">
+                  <i class="folder-open-icon"></i>
+                  选择目录
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- API 配置部分 -->
+          <div class="setting-section">
+            <div class="section-header">
+              <i class="api-icon"></i>
+              <h3>AI 模型配置</h3>
+            </div>
+            
+            <!-- API 基础信息 -->
+            <div class="setting-item with-hover">
+              <label>API 名称：</label>
+              <input 
+                type="text" 
+                v-model="settings.api.name"
+                placeholder="例如：ChatGPT API"
+              >
+            </div>
+
+            <div class="setting-item with-hover">
+              <label>请求 URL：</label>
+              <input 
+                type="text" 
+                v-model="settings.api.url"
+                placeholder="输入完整的 API URL"
+              >
+            </div>
+
+            <!-- Headers 配置 -->
+            <div class="setting-item with-hover">
+              <label>Headers：</label>
+              <div class="headers-container">
+                <transition-group name="list" tag="div">
+                  <div v-for="(header, index) in settings.api.headers" 
+                       :key="index" 
+                       class="header-item">
+                    <input 
+                      type="text" 
+                      v-model="header.key"
+                      placeholder="Key"
+                      class="header-input"
+                    >
+                    <input 
+                      type="text" 
+                      v-model="header.value"
+                      placeholder="Value"
+                      class="header-input"
+                    >
+                    <button 
+                      @click="removeHeader(index)"
+                      class="delete-button"
+                    >×</button>
+                  </div>
+                </transition-group>
+                <button 
+                  @click="addHeader"
+                  class="add-button"
+                >
+                  <i class="plus-icon"></i>
+                  添加 Header
+                </button>
+              </div>
+            </div>
+
+            <!-- Parameters 配置 -->
+            <div class="setting-item with-hover">
+              <label>Parameters：</label>
+              <div class="params-container">
+                <transition-group name="list" tag="div">
+                  <div v-for="(param, index) in settings.api.parameters" 
+                       :key="index" 
+                       class="param-item">
+                    <input 
+                      type="text" 
+                      v-model="param.key"
+                      placeholder="Key"
+                      class="param-input"
+                    >
+                    <input 
+                      type="text" 
+                      v-model="param.value"
+                      placeholder="Value"
+                      class="param-input"
+                    >
+                    <button 
+                      @click="removeParam(index)"
+                      class="delete-button"
+                    >×</button>
+                  </div>
+                </transition-group>
+                <button 
+                  @click="addParam"
+                  class="add-button"
+                >
+                  <i class="plus-icon"></i>
+                  添加 Parameter
+                </button>
+              </div>
+            </div>
+
+            <!-- Request Body 配置 -->
+            <div class="setting-item with-hover">
+              <label>Request Body：</label>
+              <textarea 
+                v-model="settings.api.body"
+                placeholder="输入 JSON 格式的请求体"
+                rows="5"
+                class="body-input"
+              ></textarea>
+            </div>
           </div>
         </div>
 
-        <!-- Parameters 配置 -->
-        <div class="setting-item">
-          <label>Parameters：</label>
-          <div class="params-container">
-            <div v-for="(param, index) in settings.api.parameters" 
-                 :key="index" 
-                 class="param-item">
-              <input 
-                type="text" 
-                v-model="param.key"
-                placeholder="Key"
-                class="param-input"
-              >
-              <input 
-                type="text" 
-                v-model="param.value"
-                placeholder="Value"
-                class="param-input"
-              >
-              <button 
-                @click="removeParam(index)"
-                class="delete-button"
-              >×</button>
-            </div>
-            <button 
-              @click="addParam"
-              class="secondary-button add-button"
-            >添加 Parameter</button>
-          </div>
+        <div class="dialog-footer">
+          <button @click="$emit('update:modelValue', false)" class="secondary-button">
+            取消
+          </button>
+          <button @click="saveSettings" class="primary-button">
+            <i class="save-icon"></i>
+            保存设置
+          </button>
         </div>
-
-        <!-- Request Body 配置 -->
-        <div class="setting-item">
-          <label>Request Body：</label>
-          <textarea 
-            v-model="settings.api.body"
-            placeholder="输入 JSON 格式的请求体"
-            rows="5"
-            class="body-input"
-          ></textarea>
-        </div>
-      </div>
-
-      <div class="dialog-actions">
-        <button @click="saveSettings" class="primary-button">保存</button>
-        <button @click="$emit('update:modelValue', false)" class="secondary-button">取消</button>
       </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script>
@@ -225,129 +262,387 @@ export default {
 </script>
 
 <style scoped>
+:root {
+  --primary-color: #333;
+  --primary-light: #444;
+  --accent-color: #666;
+  --text-color: #e0e0e0;
+  --border-color: #555;
+  --hover-color: #3a3a3a;
+  --danger-color: #ff4444;
+  --input-bg: #2a2a2a;
+}
+
 .settings-dialog {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
 }
 
+.dialog-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+}
+
 .dialog-content {
-  background: white;
+  position: relative;
+  background: #222;
+  border-radius: 16px;
+  width: 700px;
+  max-height: 85vh;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: dialog-slide-in 0.3s ease-out;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.dialog-header {
   padding: 20px;
-  border-radius: 8px;
-  width: 600px;
-  max-height: 80vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.dialog-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    #646cff 25%, 
+    #a855f7 50%, 
+    #646cff 75%, 
+    transparent 100%
+  );
+  animation: shine 3s linear infinite;
+}
+
+@keyframes shine {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.dialog-header h2 {
+  margin: 0;
+  font-size: 1.5em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(90deg, #646cff, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 10px rgba(164, 85, 247, 0.3);
+}
+
+.dialog-body {
+  padding: 20px;
   overflow-y: auto;
+  flex: 1;
+  background: #222;
 }
 
-.setting-section {
-  margin-bottom: 24px;
+.dialog-footer {
+  padding: 15px 20px;
+  background: #1a1a1a;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid var(--border-color);
 }
 
-.setting-section h3 {
-  color: #42b983;
-  margin-bottom: 16px;
-  font-size: 1.1em;
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.section-header h3 {
+  color: var(--text-color);
+  margin: 0;
+  font-size: 1.2em;
 }
 
 .setting-item {
-  margin: 15px 0;
+  margin: 20px 0;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.setting-item.with-hover:hover {
+  background: var(--hover-color);
+  transform: translateX(5px);
 }
 
 .setting-item label {
   display: block;
   margin-bottom: 8px;
-  color: #2c3e50;
-}
-
-.directory-selector {
-  display: flex;
-  gap: 10px;
+  color: var(--text-color);
+  font-weight: 500;
 }
 
 input, textarea {
   width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 10px;
+  background: var(--input-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
   font-size: 14px;
+  transition: all 0.3s ease;
+  color: var(--text-color);
 }
 
-textarea {
-  resize: vertical;
-  min-height: 100px;
+input:focus, textarea:focus {
+  border-color: var(--accent-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 102, 102, 0.1);
 }
 
-.headers-container, .params-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.header-item, .param-item {
-  display: flex;
-  gap: 8px;
-}
-
-.header-input, .param-input {
-  flex: 1;
-}
-
-.delete-button {
-  padding: 0 10px;
-  background: #ff4444;
-  color: white;
+.close-button {
+  background: none;
   border: none;
-  border-radius: 4px;
+  color: white;
+  font-size: 24px;
   cursor: pointer;
+  padding: 5px;
+  opacity: 0.8;
+  transition: all 0.3s ease;
 }
 
-.add-button {
-  margin-top: 8px;
-  align-self: flex-start;
+.close-button:hover {
+  opacity: 1;
+  transform: rotate(90deg);
 }
 
-.dialog-actions {
-  margin-top: 20px;
+.primary-button, .secondary-button, .add-button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
 }
 
 .primary-button {
-  padding: 8px 16px;
+  background: linear-gradient(135deg, #646cff 0%, #a855f7 100%);
+  color: var(--text-color);
   border: none;
-  border-radius: 4px;
-  background: #42b983;
-  color: white;
-  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
 }
 
-.secondary-button {
-  padding: 8px 16px;
-  border: 1px solid #42b983;
-  border-radius: 4px;
-  background: white;
-  color: #42b983;
-  cursor: pointer;
+.primary-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #a855f7 0%, #646cff 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
 }
 
 .primary-button:hover {
-  background: #3aa876;
+  background: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(100, 108, 255, 0.4);
+}
+
+.primary-button:hover::before {
+  opacity: 1;
+}
+
+.secondary-button {
+  background: transparent;
+  color: var(--text-color);
+  border: 2px solid #646cff;
+  position: relative;
+  overflow: hidden;
 }
 
 .secondary-button:hover {
-  background: #f0f9f6;
+  background: rgba(100, 108, 255, 0.1);
+  transform: translateY(-2px);
+  border-color: #a855f7;
+  box-shadow: 0 0 15px rgba(100, 108, 255, 0.2);
 }
 
-.body-input {
-  font-family: monospace;
+.add-button {
+  background: transparent;
+  border: 2px dashed var(--border-color);
+  color: var(--text-color);
+  margin-top: 10px;
+  width: fit-content;
+}
+
+.add-button:hover {
+  background: var(--hover-color);
+  transform: translateY(-2px);
+}
+
+.delete-button {
+  padding: 0 12px;
+  background: var(--danger-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+.delete-button:hover {
+  background: #ff2020;
+  transform: scale(1.1);
+}
+
+/* 动画效果 */
+.dialog-fade-enter-active,
+.dialog-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.dialog-fade-enter-from,
+.dialog-fade-leave-to {
+  opacity: 0;
+}
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+@keyframes dialog-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 图标样式 */
+.settings-icon-animated {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23646cff"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.65.07-.97 0-.32-.03-.65-.07-.97l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65c-.04-.24-.25-.42-.5-.42h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.63c-.04.32-.07.65-.07.97 0 .32.03.65.07.97l-2.11 1.63c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.31.61.22l2.49-1c.52.39 1.06.73 1.69.98l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.25 1.17-.59 1.69-.98l2.49 1c.22.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.63z"/></svg>');
+  filter: drop-shadow(0 0 2px #646cff);
+}
+
+.folder-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23e0e0e0"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>');
+}
+
+.api-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23e0e0e0"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm0-5H4V9h11v4zm5 5h-4V9h4v9z"/></svg>');
+}
+
+.plus-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23e0e0e0"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>');
+}
+
+.save-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23e0e0e0"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>');
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 修改滚动条样式 */
+.dialog-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dialog-body::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.dialog-body::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.dialog-body::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* 输入框占位符颜色 */
+input::placeholder,
+textarea::placeholder {
+  color: #666;
+}
+
+/* 选中文本的颜色 */
+input::selection,
+textarea::selection {
+  background: #666;
+  color: #fff;
+}
+
+/* 给输入框和按钮添加暗色主题的光晕效果 */
+.primary-button:hover,
+.secondary-button:hover,
+.add-button:hover {
+  box-shadow: 0 0 15px rgba(102, 102, 102, 0.2);
+}
+
+input:focus,
+textarea:focus {
+  box-shadow: 0 0 0 3px rgba(102, 102, 102, 0.2);
 }
 </style> 
