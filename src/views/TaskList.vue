@@ -24,17 +24,38 @@
         </div>
         <div class="form-group">
           <label>工时(小时)</label>
-          <input v-model.number="newTask.hours" type="number" placeholder="工时" class="input" />
+          <input 
+            v-model.number="newTask.hours" 
+            type="number" 
+            min="0.1" 
+            step="0.1"
+            placeholder="工时" 
+            class="input" 
+          />
         </div>
         <div class="form-group">
           <label>进度</label>
-          <input v-model.number="newTask.progress" type="number" min="0" max="100" placeholder="进度%" class="input" />
+          <input 
+            v-model.number="newTask.progress" 
+            type="number" 
+            min="0" 
+            max="100" 
+            placeholder="进度%" 
+            class="input" 
+          />
         </div>
         <div class="form-group">
           <label>备注</label>
           <textarea v-model="newTask.notes" class="input textarea" placeholder="任务备注"></textarea>
         </div>
-        <button @click="addTask" class="btn" :disabled="!isValidTask">添加任务</button>
+        <button 
+          @click="addTask" 
+          class="btn" 
+          :disabled="!isValidTask"
+          :title="!isValidTask ? '请填写必要信息' : '添加任务'"
+        >
+          添加任务
+        </button>
       </div>
 
       <div class="table-container">
@@ -76,7 +97,7 @@
               </td>
               <td>
                 <div class="notes" @click="editNotes(task)">
-                  {{ task.notes || '点击添加备注' }}
+                  {{ task.notes || '暂无备注' }}
                 </div>
               </td>
               <td>
@@ -98,7 +119,7 @@ export default {
   name: 'TaskList',
   setup() {
     const store = useStore()
-    const tasks = ref(store.state.tasks)
+    const tasks = computed(() => store.state.tasks)
     const newTask = ref({
       name: '',
       level: '中',
@@ -109,10 +130,20 @@ export default {
     })
 
     const isValidTask = computed(() => {
-      return newTask.value.name.trim() && 
-        newTask.value.hours > 0 && 
-        newTask.value.progress >= 0 && 
-        newTask.value.progress <= 100
+      const nameValid = newTask.value.name.trim().length > 0
+      const hoursValid = newTask.value.hours > 0
+      const progressValid = newTask.value.progress >= 0 && newTask.value.progress <= 100
+
+      console.log('表单验证详情:', {
+        nameValid,
+        hoursValid,
+        progressValid,
+        name: newTask.value.name,
+        hours: newTask.value.hours,
+        progress: newTask.value.progress
+      })
+
+      return nameValid && hoursValid && progressValid
     })
 
     const completedTasks = computed(() => {
@@ -124,34 +155,58 @@ export default {
     })
 
     onMounted(async () => {
-      await store.dispatch('loadTasks')
-      tasks.value = store.state.tasks
+      try {
+        await store.dispatch('loadTasks')
+      } catch (error) {
+        console.error('加载任务失败:', error)
+        alert('加载任务失败，请刷新页面重试')
+      }
     })
 
     const addTask = async () => {
-      if (!isValidTask.value) return
+      console.log('添加任务按钮被点击')
+      console.log('当前表单数据:', newTask.value)
+      console.log('表单验证结果:', isValidTask.value)
+      
+      if (!isValidTask.value) {
+        console.log('表单验证未通过，请检查：')
+        if (!newTask.value.name.trim()) {
+          alert('请输入任务名称')
+          return
+        }
+        if (newTask.value.hours <= 0) {
+          alert('工时必须大于0')
+          return
+        }
+        if (newTask.value.progress < 0 || newTask.value.progress > 100) {
+          alert('进度必须在0-100之间')
+          return
+        }
+        return
+      }
       
       const task = {
         id: Date.now(),
         ...newTask.value
       }
       delete task.editing
+
       try {
         await store.dispatch('saveTask', task)
-        tasks.value = store.state.tasks
+        console.log('任务保存成功')
+        
+        // 重置表单
+        newTask.value = {
+          name: '',
+          level: '中',
+          hours: 0,
+          progress: 0,
+          notes: '',
+          editing: false
+        }
       } catch (error) {
         console.error('添加任务失败:', error)
         alert('添加任务失败，请重试')
-        return
-      }
-
-      newTask.value = {
-        name: '',
-        level: '中',
-        hours: 0,
-        progress: 0,
-        notes: '',
-        editing: false
       }
     }
 
@@ -390,5 +445,26 @@ export default {
   transform: translate(-50%, -50%);
   color: white;
   font-size: 0.8em;
+}
+
+.btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn:disabled:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+/* 添加输入验证的视觉反馈 */
+.input:invalid {
+  border-color: #ff6b6b;
+}
+
+.input:focus {
+  border-color: #42b983;
+  box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
 }
 </style> 

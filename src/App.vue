@@ -25,7 +25,12 @@
 
 <script>
 export default {
-  name: 'App'
+  name: 'App',
+  errorCaptured(err, vm, info) {
+    console.error('应用错误:', err)
+    console.error('错误信息:', info)
+    return false // 阻止错误继续传播
+  }
 }
 </script>
 

@@ -1,4 +1,5 @@
 import { createStore } from 'vuex'
+import storageService from '../services/storageService'
 
 export default createStore({
   state: {
@@ -12,36 +13,38 @@ export default createStore({
     },
     ADD_TASK(state, task) {
       state.tasks.push(task)
-    },
-    SET_GIT_LOGS(state, logs) {
-      state.gitLogs = logs
-    },
-    SET_PROJECT_PATH(state, path) {
-      state.projectPath = path
     }
   },
   actions: {
     async loadTasks({ commit }) {
-      const tasks = await window.electronAPI.loadTasks()
-      commit('SET_TASKS', tasks || [])
+      try {
+        const tasks = await storageService.loadTasks()
+        commit('SET_TASKS', tasks || [])
+      } catch (error) {
+        console.error('加载任务失败:', error)
+        commit('SET_TASKS', [])
+      }
     },
-    async saveTask({ commit }, task) {
-      await window.electronAPI.saveTask(task)
-      commit('ADD_TASK', task)
-      return task
+    
+    async saveTask({ commit, state }, task) {
+      try {
+        const updatedTasks = [...state.tasks, task]
+        await storageService.saveTasks(updatedTasks)
+        commit('SET_TASKS', updatedTasks)
+      } catch (error) {
+        console.error('保存任务失败:', error)
+        throw error
+      }
     },
+
     async saveTasks({ commit }, tasks) {
-      await window.electronAPI.saveTasks(tasks)
-      commit('SET_TASKS', tasks)
-      return tasks
-    },
-    async fetchGitLogs({ commit }, { startDate, endDate }) {
-      const logs = await window.electronAPI.getGitLogs({
-        projectPath: this.state.projectPath,
-        startDate,
-        endDate
-      })
-      commit('SET_GIT_LOGS', logs)
+      try {
+        await storageService.saveTasks(tasks)
+        commit('SET_TASKS', tasks)
+      } catch (error) {
+        console.error('保存任务失败:', error)
+        throw error
+      }
     }
   }
 }) 
