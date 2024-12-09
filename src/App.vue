@@ -17,12 +17,14 @@
         <div class="header-content">
           <div class="logo-title-wrapper">
             <svg class="logo-svg" width="80" height="80" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-              <circle 
-                cx="60" 
-                cy="60" 
-                r="50" 
+              <rect 
+                x="60" 
+                y="60" 
+                width="40" 
+                height="40" 
                 fill="url(#glowGradient)"
-                class="glow-circle"
+                class="glow-shape"
+                transform="translate(-20, -20) rotate(45, 60, 60)"
               >
                 <animate 
                   attributeName="opacity" 
@@ -30,7 +32,12 @@
                   dur="3s" 
                   repeatCount="indefinite"
                 />
-              </circle>
+              </rect>
+              
+              <circle cx="60" cy="20" r="4" fill="url(#gradient)" />
+              <circle cx="100" cy="60" r="4" fill="url(#gradient)" />
+              <circle cx="60" cy="100" r="4" fill="url(#gradient)" />
+              <circle cx="20" cy="60" r="4" fill="url(#gradient)" />
             </svg>
             
             <div class="title-container">
@@ -163,7 +170,7 @@ export default {
   letter-spacing: 2px;
 }
 
-.glow-circle {
+.glow-shape {
   filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.6));
 }
 
