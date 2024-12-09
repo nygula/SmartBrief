@@ -44,8 +44,22 @@
           </div>
 
           <nav class="nav-menu">
-            <router-link to="/">任务列表</router-link> |
-            <router-link to="/report">生成报告</router-link>
+            <router-link to="/" custom v-slot="{ navigate, isActive }">
+              <button 
+                @click="navigate" 
+                class="nav-button" 
+                :class="{ active: isActive }">
+                任务列表
+              </button>
+            </router-link>
+            <router-link to="/report" custom v-slot="{ navigate, isActive }">
+              <button 
+                @click="navigate" 
+                class="nav-button" 
+                :class="{ active: isActive }">
+                生成报告
+              </button>
+            </router-link>
           </nav>
         </div>
       </div>
@@ -79,6 +93,8 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
 }
 
 .logo-title-wrapper {
@@ -89,6 +105,7 @@ export default {
 
 .logo-svg {
   flex-shrink: 0;
+  z-index: 1;
 }
 
 .title-container {
@@ -149,22 +166,50 @@ export default {
 }
 
 .nav-menu {
-  font-size: 1.1em;
+  display: flex;
+  gap: 10px;
+  z-index: 100;
 }
 
-.nav-menu a {
+.nav-button {
+  background: rgba(66, 185, 131, 0.1);
+  border: 2px solid #42b983;
   color: #42b983;
-  text-decoration: none;
-  padding: 5px 15px;
+  padding: 8px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: 500;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.nav-menu a:hover {
-  color: #2c3e50;
+.nav-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #42b983;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s ease;
+  z-index: -1;
 }
 
-.nav-menu a.router-link-active {
-  color: #2c3e50;
-  font-weight: bold;
+.nav-button:hover {
+  color: white;
+}
+
+.nav-button:hover::before {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.nav-button.active {
+  background: #42b983;
+  color: white;
 }
 </style> 
