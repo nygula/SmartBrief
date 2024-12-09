@@ -649,4 +649,36 @@ input:focus,
 textarea:focus {
   box-shadow: 0 0 0 3px rgba(102, 102, 102, 0.2);
 }
+
+/* 修改 header-item 和 param-item 的样式 */
+.header-item,
+.param-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.header-input,
+.param-input {
+  flex: 1;
+  width: auto; /* 覆盖之前的 width: 100% */
+}
+
+/* 为了让删除按钮垂直居中 */
+.delete-button {
+  align-self: center;
+  height: 100%;
+  min-height: 42px; /* 与输入框高度保持一致 */
+  display: flex;
+  align-items: center;
+}
+
+/* 调整容器样式 */
+.headers-container,
+.params-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 </style> 
