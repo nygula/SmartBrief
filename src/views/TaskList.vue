@@ -18,56 +18,58 @@
 
     <!-- 新任务输入区域 -->
     <div class="new-task-section">
-      <div class="input-group">
-        <label>任务名称</label>
-        <input 
-          type="text" 
-          v-model="newTask.name"
-          placeholder="输入任务名称"
-        >
-      </div>
-      
-      <div class="input-group">
-        <label>优先级</label>
-        <select v-model="newTask.priority">
-          <option value="低">低</option>
-          <option value="中">中</option>
-          <option value="高">高</option>
-        </select>
-      </div>
-      
-      <div class="input-group">
-        <label>工时(小时)</label>
-        <input 
-          type="number" 
-          v-model="newTask.hours"
-          min="0"
-        >
-      </div>
-      
-      <div class="input-group">
-        <label>进度</label>
-        <input 
-          type="number" 
-          v-model="newTask.progress"
-          min="0" 
-          max="100"
-        >
-      </div>
-      
-      <div class="input-group">
-        <label>备注</label>
-        <input 
-          type="text" 
-          v-model="newTask.notes"
-          placeholder="添加备注信息"
-        >
-      </div>
+      <div class="input-row">
+        <div class="input-group name-input">
+          <label>任务名称</label>
+          <input 
+            type="text" 
+            v-model="newTask.name"
+            placeholder="输入任务名称"
+          >
+        </div>
+        
+        <div class="input-group">
+          <label>优先级</label>
+          <select v-model="newTask.priority">
+            <option value="低">低</option>
+            <option value="中">中</option>
+            <option value="高">高</option>
+          </select>
+        </div>
+        
+        <div class="input-group">
+          <label>工时(小时)</label>
+          <input 
+            type="number" 
+            v-model="newTask.hours"
+            min="0"
+          >
+        </div>
+        
+        <div class="input-group">
+          <label>进度(%)</label>
+          <input 
+            type="number" 
+            v-model="newTask.progress"
+            min="0" 
+            max="100"
+          >
+        </div>
+        
+        <div class="input-group notes-input">
+          <label>备注</label>
+          <input 
+            type="text" 
+            v-model="newTask.notes"
+            placeholder="添加备注信息"
+          >
+        </div>
 
-      <button @click="addTask" class="add-task-button">
-        <i class="plus-icon"></i>
-        添加任务
-      </button>
+        <button @click="addTask" class="add-task-button">
+          <i class="plus-icon"></i>
+          添加任务
+        </button>
+      </div>
     </div>
 
     <!-- 任务列表 -->
@@ -207,9 +209,6 @@ export default {
 
 /* 新任务输入区域样式 */
 .new-task-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
   margin-bottom: 30px;
   padding: 20px;
   background: rgba(0, 0, 0, 0.2);
@@ -217,10 +216,25 @@ export default {
   border: 1px solid var(--border-color);
 }
 
+.input-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+}
+
 .input-group {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.name-input {
+  width: 200px;
+}
+
+.notes-input {
+  flex: 1;
 }
 
 .input-group label {
