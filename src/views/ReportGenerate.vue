@@ -7,66 +7,66 @@
         <h2>报告配置</h2>
       </div>
 
-      <div class="config-grid">
-        <div class="input-group">
-          <label>项目目录</label>
-          <div class="directory-input">
-            <input 
-              type="text" 
-              v-model="config.projectPath"
-              placeholder="选择项目目录"
-              readonly
-            >
-            <button class="browse-button" @click="openDirectoryDialog">
-              <i class="folder-icon"></i>
-              浏览
-            </button>
-          </div>
-        </div>
+      <div class="report-type-selector">
+        <label>报告类型</label>
+        <select v-model="config.reportType">
+          <option value="daily">日报</option>
+          <option value="weekly">周报</option>
+          <option value="monthly">月报</option>
+          <option value="custom">自定义</option>
+        </select>
+      </div>
 
-        <div class="input-group">
-          <label>时间范围</label>
-          <div class="date-range">
-            <input 
-              type="date" 
-              v-model="config.startDate"
-              @change="e => handleDateChange('start', e)"
-            >
-            <span class="date-separator">至</span>
-            <input 
-              type="date" 
-              v-model="config.endDate"
-              @change="e => handleDateChange('end', e)"
-            >
+      <div class="projects-config">
+        <label>项目配置</label>
+        <div class="projects-list">
+          <div v-for="(project, index) in projects" :key="index" class="project-item">
+            <div class="project-header">
+              <div class="directory-input">
+                <input type="text" :value="project.path" readonly>
+                <button class="remove-button" @click="removeProject(index)">
+                  <i class="remove-icon"></i>
+                </button>
+              </div>
+            </div>
+            <div class="project-dates">
+              <div class="date-range">
+                <input 
+                  type="date" 
+                  v-model="project.startDate"
+                  @change="e => handleProjectDateChange(index, 'start', e)"
+                >
+                <span class="date-separator">至</span>
+                <input 
+                  type="date" 
+                  v-model="project.endDate"
+                  @change="e => handleProjectDateChange(index, 'end', e)"
+                >
+              </div>
+            </div>
           </div>
+          <button class="add-project-btn" @click="openDirectoryDialog">
+            <i class="add-icon"></i>
+            添加项目
+          </button>
         </div>
+      </div>
 
-        <div class="input-group">
-          <label>报告类型</label>
-          <select v-model="config.reportType">
-            <option value="daily">日报</option>
-            <option value="weekly">周报</option>
-            <option value="monthly">月报</option>
-            <option value="custom">自定义</option>
-          </select>
-        </div>
-
-        <div class="input-group">
-          <label>包含内容</label>
-          <div class="checkbox-group">
-            <label class="checkbox-label">
-              <input type="checkbox" v-model="config.includeCommits">
-              <span>代码提交</span>
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" v-model="config.includeTasks">
-              <span>任务进度</span>
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" v-model="config.includeStats">
-              <span>统计数据</span>
-            </label>
-          </div>
+      <div class="input-group">
+        <label>包含内容</label>
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" v-model="config.includeCommits">
+            <span>代码提交</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" v-model="config.includeTasks">
+            <span>任务进度</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" v-model="config.includeStats">
+            <span>统计数据</span>
+          </label>
         </div>
       </div>
     </div>
@@ -146,9 +146,6 @@ export default {
   data() {
     return {
       config: {
-        projectPath: '',
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date().toISOString().split('T')[0],
         reportType: 'weekly',
         includeCommits: true,
         includeTasks: true,
@@ -156,6 +153,7 @@ export default {
         aiDepth: 'detailed',
         customPrompt: ''
       },
+      projects: [],
       availableTags: [
         { id: 1, name: '代码质量' },
         { id: 2, name: '进度分析' },
@@ -214,24 +212,33 @@ export default {
         }
         
         const directory = await window.electronAPI.selectDirectory()
-        if (directory) {
-          this.config.projectPath = directory
+        if (directory && !this.projects.some(p => p.path === directory)) {
+          this.projects.push({
+            path: directory,
+            startDate: new Date().toISOString().split('T')[0],
+            endDate: new Date().toISOString().split('T')[0]
+          })
         }
       } catch (error) {
         console.error('选择目录失败:', error)
       }
     },
-    handleDateChange(type, event) {
+    removeProject(index) {
+      this.projects.splice(index, 1)
+    },
+    handleProjectDateChange(projectIndex, type, event) {
       const value = event.target.value
+      const project = this.projects[projectIndex]
+      
       if (type === 'start') {
-        this.config.startDate = value
-        if (this.config.endDate < value) {
-          this.config.endDate = value
+        project.startDate = value
+        if (project.endDate < value) {
+          project.endDate = value
         }
       } else {
-        this.config.endDate = value
-        if (this.config.startDate > value) {
-          this.config.startDate = value
+        project.endDate = value
+        if (project.startDate > value) {
+          project.startDate = value
         }
       }
     }
@@ -451,40 +458,61 @@ input:focus, select:focus, textarea:focus {
   background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>');
 }
 
-.directory-input {
+.directory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.directory-item {
   display: flex;
   gap: 10px;
 }
 
-.directory-input input {
+.directory-item input {
   flex: 1;
   cursor: default;
-  background: var(--input-bg);
 }
 
-.browse-button {
+.remove-button {
+  padding: 8px;
+  background: rgba(255, 59, 48, 0.1);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.remove-button:hover {
+  background: rgba(255, 59, 48, 0.2);
+}
+
+.add-project-btn {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 8px 16px;
   background: var(--primary-gradient);
   border: none;
   border-radius: 8px;
   color: white;
+  font-size: 0.9em;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.browse-button:hover {
-  box-shadow: 0 0 15px rgba(100, 108, 255, 0.3);
+.add-project-btn:hover {
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
 }
 
-.folder-icon {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>');
+.add-project-btn .add-icon {
+  width: 14px;
+  height: 14px;
 }
 
 .date-range input[type="date"] {
@@ -499,5 +527,41 @@ input:focus, select:focus, textarea:focus {
 .date-range input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0.8);
   cursor: pointer;
+}
+
+.report-type-selector {
+  margin-bottom: 20px;
+  max-width: 200px;
+}
+
+.projects-config {
+  margin-top: 20px;
+}
+
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.project-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 15px;
+  border: 1px solid var(--border-color);
+}
+
+.project-header {
+  margin-bottom: 10px;
+}
+
+.directory-input {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.project-dates {
+  margin-top: 10px;
 }
 </style> 
