@@ -7,9 +7,11 @@
 
 1️⃣ **导入任务数据**
    - 导入或填写任务数据信息
+
 <div align="center">
   <img src="image-2.png" width="800" style="border-radius: 10px; margin: 20px 0" />
 </div>
+
 2️⃣ **配置模板**
 
    -  导入本地Git项目
@@ -21,6 +23,7 @@
 <div align="center">
   <img src="image-1.png" width="800" style="border-radius: 10px; margin: 20px 0" />
 </div>
+
 3️⃣ **一键生成**
 
    -  AI智能分析
@@ -29,6 +32,7 @@
 <div align="center">
   <img src="image-3.png" width="800" style="border-radius: 10px; margin: 20px 0" />
 </div>
+
 ## 🛠️ 技术栈
 
 <div align="center">
