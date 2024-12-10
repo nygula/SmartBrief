@@ -105,7 +105,6 @@ export default {
   props: {
     modelValue: Boolean
   },
-  emits: ['update:modelValue', 'settings-saved'],
   
   data() {
     return {
@@ -120,110 +119,50 @@ export default {
       }
     }
   },
-
-  computed: {
-    getUrlPlaceholder() {
-      const placeholders = {
-        chatgpt: 'https://api.openai.com/v1/chat/completions',
-        doubao: '豆包 API 地址',
-        qianwen: '通义千问 API 地址',
-        wenxin: '文心一言 API 地址'
+  
+  async mounted() {
+    try {
+      // 加载设置
+      const settings = await window.electronAPI.loadSettings()
+      if (settings) {
+        this.settings = {
+          dataDirectory: settings.dataDirectory || '',
+          api: {
+            modelType: settings.api?.modelType || 'chatgpt',
+            url: settings.api?.url || '',
+            apiKey: settings.api?.apiKey || '',
+            modelName: settings.api?.modelName || ''
+          }
+        }
       }
-      return placeholders[this.settings.api.modelType]
-    },
-
-    getModelNamePlaceholder() {
-      const placeholders = {
-        chatgpt: 'gpt-3.5-turbo',
-        doubao: 'DBAI-4',
-        qianwen: 'qwen-turbo',
-        wenxin: 'ERNIE-Bot-4'
-      }
-      return placeholders[this.settings.api.modelType]
+    } catch (error) {
+      console.error('加载设置失败:', error)
     }
   },
-
+  
   methods: {
     async selectDirectory() {
       try {
-        if (!window.electronAPI?.selectDirectory) {
-          throw new Error('选择目录功能不可用')
-        }
-        
         const directory = await window.electronAPI.selectDirectory()
         if (directory) {
           this.settings.dataDirectory = directory
         }
-      } catch (err) {
-        console.error('选择目录错误:', err)
-        alert(`选择目录失败: ${err.message}`)
+      } catch (error) {
+        console.error('选择目录失败:', error)
+        alert('选择目录失败: ' + error.message)
       }
     },
-
-    validateSettings() {
-      if (!this.settings.dataDirectory) {
-        throw new Error('请选择数据保存目录')
-      }
-      if (!this.settings.api.url) {
-        throw new Error('请输入 API URL')
-      }
-      if (!this.settings.api.apiKey) {
-        throw new Error('请输入 API Key')
-      }
-      if (!this.settings.api.modelName) {
-        throw new Error('请输入模型名称')
-      }
-    },
-
+    
     async saveSettings() {
       try {
-        this.validateSettings()
-        
-        // 创建一个纯数据对象用于保存
-        const settingsToSave = {
-          dataDirectory: this.settings.dataDirectory,
-          api: {
-            modelType: this.settings.api.modelType,
-            url: this.settings.api.url,
-            apiKey: this.settings.api.apiKey,
-            modelName: this.settings.api.modelName
-          }
-        }
-        
-        // 保存设置到文件
-        const result = await window.electronAPI.saveSettings(settingsToSave)
-        
-        // 发送成功消息
-        alert('设置已保存成功！保存路径：' + result.path)
-        
-        this.$emit('settings-saved', settingsToSave)
+        await window.electronAPI.saveSettings(this.settings)
+        this.$emit('settings-saved', this.settings)
         this.$emit('update:modelValue', false)
-      } catch (err) {
-        console.error('保存设置失败:', err)
-        alert(err.message || '保存设置失败')
+        alert('设置已保存')
+      } catch (error) {
+        console.error('保存设置失败:', error)
+        alert('保存设置失败: ' + error.message)
       }
-    }
-  },
-
-  async mounted() {
-    try {
-      if (window.electronAPI) {
-        const savedSettings = await window.electronAPI.loadSettings()
-        if (savedSettings) {
-          this.settings = {
-            ...this.settings,
-            ...savedSettings,
-            api: {
-              ...this.settings.api,
-              ...savedSettings.api
-            }
-          }
-        }
-      } else {
-        console.warn('electronAPI 不可用')
-      }
-    } catch (err) {
-      console.error('加载设置失败:', err)
     }
   }
 }

@@ -30,7 +30,183 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(createWindow)
+// 获取默认缓存目录路径
+function getDefaultCacheDirectory() {
+  // 获取应用程序的安装目录
+  const appPath = app.getAppPath()
+  return path.join(appPath, 'cache')
+}
+
+// 确保缓存目录存在
+function ensureCacheDirectory() {
+  const cacheDir = getDefaultCacheDirectory()
+  if (!fs.existsSync(cacheDir)) {
+    fs.mkdirSync(cacheDir, { recursive: true })
+  }
+  return cacheDir
+}
+
+// 初始化或加载设置
+async function initSettings() {
+  const cacheDir = ensureCacheDirectory()
+  const settingsPath = path.join(cacheDir, 'settings.json')
+  
+  try {
+    if (!fs.existsSync(settingsPath)) {
+      // 创建默认设置
+      const defaultSettings = {
+        dataDirectory: cacheDir,
+        api: {
+          modelType: 'chatgpt',
+          url: '',
+          apiKey: '',
+          modelName: ''
+        }
+      }
+      fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings, null, 2))
+      return defaultSettings
+    }
+    
+    // 读取现有设置
+    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'))
+    // 确保设置中有数据目录，如果没有则使用默认缓存目录
+    if (!settings.dataDirectory) {
+      settings.dataDirectory = cacheDir
+      fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2))
+    }
+    return settings
+  } catch (error) {
+    console.error('初始化设置失败:', error)
+    // 返回默认设置
+    return { dataDirectory: cacheDir }
+  }
+}
+
+// 在应用启动时初始化设置
+app.whenReady().then(async () => {
+  // 初始化设置
+  const settings = await initSettings()
+  
+  // 创建窗口
+  createWindow()
+  
+  // IPC通信处理
+  ipcMain.handle('get-git-logs', async (event, { projectPath, startDate, endDate }) => {
+    return await initGitService().getGitLogs(projectPath, startDate, endDate)
+  })
+
+  ipcMain.handle('save-task', async (event, taskData) => {
+    return await saveData('tasks', taskData)
+  })
+
+  ipcMain.handle('load-tasks', async () => {
+    return await loadData('tasks')
+  })
+
+  ipcMain.handle('save-tasks', async (event, tasks) => {
+    return await saveData('tasks', tasks)
+  })
+
+  ipcMain.handle('dialog:selectDirectory', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openDirectory'],
+      title: '选择数据保存目录'
+    })
+    
+    if (!result.canceled) {
+      return result.filePaths[0]
+    }
+    return null
+  })
+
+  ipcMain.handle('settings:save', async (event, settings) => {
+    try {
+      // 保存设置到配置文件
+      const settingsPath = path.join(app.getPath('userData'), 'settings.json')
+      await fs.promises.writeFile(settingsPath, JSON.stringify(settings, null, 2))
+      return true
+    } catch (err) {
+      console.error('保存设置失败:', err)
+      throw err
+    }
+  })
+
+  ipcMain.handle('settings:load', async () => {
+    try {
+      const settingsPath = path.join(app.getPath('userData'), 'settings.json')
+      const data = await fs.promises.readFile(settingsPath, 'utf8')
+      return JSON.parse(data)
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        return null // 文件不存在时返回 null
+      }
+      throw err
+    }
+  })
+
+  ipcMain.handle('save-settings', async (event, settings) => {
+    try {
+      const cacheDir = ensureCacheDirectory()
+      const settingsPath = path.join(cacheDir, 'settings.json')
+      
+      // 确保设置中包含数据目录
+      if (!settings.dataDirectory) {
+        settings.dataDirectory = cacheDir
+      }
+      
+      fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2))
+      return { success: true, path: settingsPath }
+    } catch (error) {
+      console.error('保存设置失败:', error)
+      throw new Error('保存设置失败: ' + error.message)
+    }
+  })
+
+  // 保存数据
+  ipcMain.handle('save-data', async (event, { fileName, directory, data }) => {
+    try {
+      const filePath = path.join(directory, fileName)
+      
+      // 确保目录存在
+      if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory, { recursive: true })
+      }
+      
+      // 写入文件
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
+      return { success: true, path: filePath }
+    } catch (error) {
+      console.error('保存数据失败:', error)
+      throw new Error('保存数据失败: ' + error.message)
+    }
+  })
+
+  // 加载数据
+  ipcMain.handle('load-data', async (event, { fileName, directory }) => {
+    try {
+      const filePath = path.join(directory, fileName)
+      
+      // 检查文件是否存在
+      if (!fs.existsSync(filePath)) {
+        // 如果文件不存在，创建一个空文件
+        fs.writeFileSync(filePath, JSON.stringify([]))
+        return []
+      }
+      
+      // 读取文件
+      const data = fs.readFileSync(filePath, 'utf8')
+      return JSON.parse(data)
+    } catch (error) {
+      console.error('加载数据失败:', error)
+      // 如果出错，返回空数组而不是抛出错误
+      return []
+    }
+  })
+
+  ipcMain.handle('load-settings', async () => {
+    return await initSettings()
+  })
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -41,123 +217,5 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
-  }
-})
-
-// IPC通信处理
-ipcMain.handle('get-git-logs', async (event, { projectPath, startDate, endDate }) => {
-  return await initGitService().getGitLogs(projectPath, startDate, endDate)
-})
-
-ipcMain.handle('save-task', async (event, taskData) => {
-  return await saveData('tasks', taskData)
-})
-
-ipcMain.handle('load-tasks', async () => {
-  return await loadData('tasks')
-})
-
-ipcMain.handle('save-tasks', async (event, tasks) => {
-  return await saveData('tasks', tasks)
-})
-
-ipcMain.handle('dialog:selectDirectory', async () => {
-  const result = await dialog.showOpenDialog({
-    properties: ['openDirectory'],
-    title: '选择数据保存目录'
-  })
-  
-  if (!result.canceled) {
-    return result.filePaths[0]
-  }
-  return null
-})
-
-ipcMain.handle('settings:save', async (event, settings) => {
-  try {
-    // 保存设置到配置文件
-    const settingsPath = path.join(app.getPath('userData'), 'settings.json')
-    await fs.promises.writeFile(settingsPath, JSON.stringify(settings, null, 2))
-    return true
-  } catch (err) {
-    console.error('保存设置失败:', err)
-    throw err
-  }
-})
-
-ipcMain.handle('settings:load', async () => {
-  try {
-    const settingsPath = path.join(app.getPath('userData'), 'settings.json')
-    const data = await fs.promises.readFile(settingsPath, 'utf8')
-    return JSON.parse(data)
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      return null // 文件不存在时返回 null
-    }
-    throw err
-  }
-})
-
-ipcMain.handle('save-settings', async (event, settings) => {
-  try {
-    const settingsPath = path.join(settings.dataDirectory, 'settings.json')
-    
-    // 确保目录存在
-    if (!fs.existsSync(settings.dataDirectory)) {
-      fs.mkdirSync(settings.dataDirectory, { recursive: true })
-    }
-    
-    // 将设置保存为 JSON 文件
-    fs.writeFileSync(
-      settingsPath,
-      JSON.stringify(settings, null, 2),
-      'utf-8'
-    )
-    
-    return { success: true, path: settingsPath }
-  } catch (error) {
-    console.error('保存设置文件失败:', error)
-    throw new Error('保存设置文件失败: ' + error.message)
-  }
-})
-
-// 保存数据
-ipcMain.handle('save-data', async (event, { fileName, directory, data }) => {
-  try {
-    const filePath = path.join(directory, fileName)
-    
-    // 确保目录存在
-    if (!fs.existsSync(directory)) {
-      fs.mkdirSync(directory, { recursive: true })
-    }
-    
-    // 写入文件
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
-    return { success: true, path: filePath }
-  } catch (error) {
-    console.error('保存数据失败:', error)
-    throw new Error('保存数据失败: ' + error.message)
-  }
-})
-
-// 加载数据
-ipcMain.handle('load-data', async (event, { fileName, directory }) => {
-  try {
-    const filePath = path.join(directory, fileName)
-    
-    // 检查文件是否存在
-    if (!fs.existsSync(filePath)) {
-      // 如果文件不存在，创建一个空文件
-      fs.writeFileSync(filePath, JSON.stringify([]))
-      return []
-    }
-    
-    // 读取文件
-    const data = fs.readFileSync(filePath, 'utf8')
-    return JSON.parse(data)
-  } catch (error) {
-    console.error('加载数据失败:', error)
-    // 如果出错，返回空数组而不是抛出错误
-    return []
   }
 }) 
