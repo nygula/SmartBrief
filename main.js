@@ -63,19 +63,15 @@ ipcMain.handle('save-tasks', async (event, tasks) => {
 
 ipcMain.handle('dialog:selectDirectory', async () => {
   const result = await dialog.showOpenDialog({
-    properties: ['openDirectory']
-  });
-
+    properties: ['openDirectory'],
+    title: '选择数据保存目录'
+  })
+  
   if (!result.canceled) {
-    try {
-      await fs.promises.access(result.filePaths[0], fs.constants.W_OK);
-      return { canceled: false, filePaths: result.filePaths };
-    } catch (err) {
-      throw new Error('所选目录没有写入权限');
-    }
+    return result.filePaths[0]
   }
-  return { canceled: true, filePaths: [] };
-});
+  return null
+})
 
 ipcMain.handle('settings:save', async (event, settings) => {
   try {

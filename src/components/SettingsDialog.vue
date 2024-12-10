@@ -188,11 +188,16 @@ export default {
   methods: {
     async selectDirectory() {
       try {
+        if (!window.electronAPI?.selectDirectory) {
+          throw new Error('选择目录功能不可用')
+        }
+        
         const directory = await window.electronAPI.selectDirectory()
         if (directory) {
           this.settings.dataDirectory = directory
         }
       } catch (err) {
+        console.error('选择目录错误:', err)
         alert(`选择目录失败: ${err.message}`)
       }
     },
@@ -356,6 +361,7 @@ export default {
   gap: 10px;
   background: linear-gradient(90deg, #646cff, #a855f7);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 0 10px rgba(164, 85, 247, 0.3);
 }
