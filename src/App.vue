@@ -57,7 +57,7 @@
                 @click="$router.push('/')"
               >
                 <div class="step-number">1</div>
-                <div class="step-label">任务列表</div>
+                <div class="step-label">任务清单</div>
                 <div class="step-line"></div>
               </div>
               <div 
