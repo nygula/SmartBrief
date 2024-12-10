@@ -120,6 +120,48 @@ export default {
     }
   },
   
+  methods: {
+    async selectDirectory() {
+      try {
+        const directory = await window.electronAPI.selectDirectory()
+        if (directory) {
+          this.settings.dataDirectory = directory
+        }
+      } catch (error) {
+        console.error('选择目录失败:', error)
+        alert('选择目录失败: ' + error.message)
+      }
+    },
+    
+    async saveSettings() {
+      try {
+        // 创建一个纯数据对象用于保存
+        const settingsToSave = {
+          dataDirectory: this.settings.dataDirectory || '',
+          api: {
+            modelType: this.settings.api?.modelType || 'chatgpt',
+            url: this.settings.api?.url || '',
+            apiKey: this.settings.api?.apiKey || '',
+            modelName: this.settings.api?.modelName || ''
+          }
+        }
+        
+        // 确保所有字段都是字符串类型
+        settingsToSave.api.url = String(settingsToSave.api.url)
+        settingsToSave.api.apiKey = String(settingsToSave.api.apiKey)
+        settingsToSave.api.modelName = String(settingsToSave.api.modelName)
+        
+        await window.electronAPI.saveSettings(settingsToSave)
+        this.$emit('settings-saved', settingsToSave)
+        this.$emit('update:modelValue', false)
+        alert('设置已保存')
+      } catch (error) {
+        console.error('保存设置失败:', error)
+        alert('保存设置失败: ' + error.message)
+      }
+    }
+  },
+  
   async mounted() {
     try {
       // 加载设置
@@ -137,32 +179,6 @@ export default {
       }
     } catch (error) {
       console.error('加载设置失败:', error)
-    }
-  },
-  
-  methods: {
-    async selectDirectory() {
-      try {
-        const directory = await window.electronAPI.selectDirectory()
-        if (directory) {
-          this.settings.dataDirectory = directory
-        }
-      } catch (error) {
-        console.error('选择目录失败:', error)
-        alert('选择目录失败: ' + error.message)
-      }
-    },
-    
-    async saveSettings() {
-      try {
-        await window.electronAPI.saveSettings(this.settings)
-        this.$emit('settings-saved', this.settings)
-        this.$emit('update:modelValue', false)
-        alert('设置已保存')
-      } catch (error) {
-        console.error('保存设置失败:', error)
-        alert('保存设置失败: ' + error.message)
-      }
     }
   }
 }

@@ -1,9 +1,9 @@
 {
-  "dataDirectory": "/Users/chenhaiming/WebstormProjects/ai-report-tool/cache",
+  "dataDirectory": "/Users/chenhaiming/Desktop/testsetting",
   "api": {
     "modelType": "chatgpt",
-    "url": "",
-    "apiKey": "",
-    "modelName": ""
+    "url": "http://233123/",
+    "apiKey": "12312",
+    "modelName": "123213"
   }
 }
