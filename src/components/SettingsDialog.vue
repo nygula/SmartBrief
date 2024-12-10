@@ -178,10 +178,28 @@ export default {
     async saveSettings() {
       try {
         this.validateSettings()
-        await window.electronAPI.saveSettings(this.settings)
-        this.$emit('settings-saved', this.settings)
+        
+        // 创建一个纯数据对象用于保存
+        const settingsToSave = {
+          dataDirectory: this.settings.dataDirectory,
+          api: {
+            modelType: this.settings.api.modelType,
+            url: this.settings.api.url,
+            apiKey: this.settings.api.apiKey,
+            modelName: this.settings.api.modelName
+          }
+        }
+        
+        // 保存设置到文件
+        const result = await window.electronAPI.saveSettings(settingsToSave)
+        
+        // 发送成功消息
+        alert('设置已保存成功！保存路径：' + result.path)
+        
+        this.$emit('settings-saved', settingsToSave)
         this.$emit('update:modelValue', false)
       } catch (err) {
+        console.error('保存设置失败:', err)
         alert(err.message || '保存设置失败')
       }
     }

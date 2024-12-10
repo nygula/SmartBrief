@@ -96,4 +96,27 @@ ipcMain.handle('settings:load', async () => {
     }
     throw err
   }
+})
+
+ipcMain.handle('save-settings', async (event, settings) => {
+  try {
+    const settingsPath = path.join(settings.dataDirectory, 'settings.json')
+    
+    // 确保目录存在
+    if (!fs.existsSync(settings.dataDirectory)) {
+      fs.mkdirSync(settings.dataDirectory, { recursive: true })
+    }
+    
+    // 将设置保存为 JSON 文件
+    fs.writeFileSync(
+      settingsPath,
+      JSON.stringify(settings, null, 2),
+      'utf-8'
+    )
+    
+    return { success: true, path: settingsPath }
+  } catch (error) {
+    console.error('保存设置文件失败:', error)
+    throw new Error('保存设置文件失败: ' + error.message)
+  }
 }) 
