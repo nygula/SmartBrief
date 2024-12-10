@@ -115,6 +115,8 @@
 </template>
 
 <script>
+import { dataService } from '../services/dataService'
+
 export default {
   name: 'TaskList',
   data() {
@@ -141,7 +143,7 @@ export default {
     }
   },
   methods: {
-    addTask() {
+    async addTask() {
       if (!this.newTask.name) {
         alert('请输入任务名称')
         return
@@ -153,6 +155,7 @@ export default {
       }
       
       this.tasks.push(task)
+      await this.saveTaskList()
       
       // 重置表单
       this.newTask = {
@@ -163,8 +166,50 @@ export default {
         notes: ''
       }
     },
-    deleteTask(taskId) {
+    
+    async deleteTask(taskId) {
       this.tasks = this.tasks.filter(task => task.id !== taskId)
+      await this.saveTaskList()
+    },
+    
+    async saveTaskList() {
+      try {
+        await dataService.saveTaskList(this.tasks)
+      } catch (error) {
+        console.error('保存任务列表失败:', error)
+        alert('保存任务列表失败: ' + error.message)
+      }
+    },
+    
+    async loadTaskList() {
+      try {
+        const tasks = await dataService.loadTaskList()
+        if (tasks) {
+          this.tasks = tasks
+        }
+      } catch (error) {
+        console.error('加载任务列表失败:', error)
+        alert('加载任务列表失败: ' + error.message)
+      }
+    }
+  },
+  
+  async mounted() {
+    // 从设置中获取数据目录
+    const settings = await window.electronAPI.loadSettings()
+    if (settings?.dataDirectory) {
+      dataService.setDataDirectory(settings.dataDirectory)
+      await this.loadTaskList()
+    }
+  },
+  
+  watch: {
+    // 监听任务变化自动保存（可选）
+    tasks: {
+      deep: true,
+      handler() {
+        this.saveTaskList()
+      }
     }
   }
 }

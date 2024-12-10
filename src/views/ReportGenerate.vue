@@ -148,6 +148,8 @@
 </template>
 
 <script>
+import { dataService } from '../services/dataService'
+
 export default {
   name: 'ReportGenerate',
   data() {
@@ -168,7 +170,7 @@ export default {
         { id: 4, name: '安全性' },
         { id: 5, name: '最佳实践' }
       ],
-      selectedTags: [1, 2],
+      selectedTags: [],
       isGenerating: false,
       generationProgress: 0,
       progressStatus: ''
@@ -176,6 +178,9 @@ export default {
   },
   methods: {
     toggleTag(tagId) {
+      if (!this.selectedTags) {
+        this.selectedTags = []
+      }
       const index = this.selectedTags.indexOf(tagId)
       if (index === -1) {
         this.selectedTags.push(tagId)
@@ -260,6 +265,73 @@ export default {
       let end = parts.slice(-2).join('/');
       
       return `${start}/.../${end}`;
+    },
+    async saveReportConfig() {
+      try {
+        const configToSave = {
+          config: { ...this.config },
+          projects: [...this.projects],
+          selectedTags: [...this.selectedTags]
+        }
+        await dataService.saveReportConfig(configToSave)
+      } catch (error) {
+        console.error('保存报告配置失败:', error)
+      }
+    },
+    
+    async loadReportConfig() {
+      try {
+        const config = await dataService.loadReportConfig()
+        if (config) {
+          this.config = {
+            reportType: config.config?.reportType || 'weekly',
+            includeCommits: config.config?.includeCommits ?? true,
+            includeTasks: config.config?.includeTasks ?? true,
+            includeStats: config.config?.includeStats ?? true,
+            aiDepth: config.config?.aiDepth || 'detailed',
+            customPrompt: config.config?.customPrompt || ''
+          }
+          this.projects = Array.isArray(config.projects) ? config.projects : []
+          this.selectedTags = Array.isArray(config.selectedTags) ? config.selectedTags : []
+        }
+      } catch (error) {
+        console.error('加载报告配置失败:', error)
+        this.selectedTags = []
+      }
+    }
+  },
+  
+  async mounted() {
+    try {
+      const settings = await window.electronAPI.loadSettings()
+      if (settings?.dataDirectory) {
+        dataService.setDataDirectory(settings.dataDirectory)
+        await this.loadReportConfig()
+      }
+    } catch (error) {
+      console.error('初始化报告配置失败:', error)
+      this.selectedTags = []
+    }
+  },
+  
+  watch: {
+    // 监听配置变化自动保存
+    config: {
+      deep: true,
+      handler() {
+        this.saveReportConfig()
+      }
+    },
+    projects: {
+      deep: true,
+      handler() {
+        this.saveReportConfig()
+      }
+    },
+    selectedTags: {
+      handler() {
+        this.saveReportConfig()
+      }
     }
   }
 }

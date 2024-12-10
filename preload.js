@@ -7,5 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 保存设置
   saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
   // 加载设置
-  loadSettings: () => ipcRenderer.invoke('settings:load')
+  loadSettings: () => ipcRenderer.invoke('settings:load'),
+  saveData: (data) => ipcRenderer.invoke('save-data', data),
+  loadData: (data) => ipcRenderer.invoke('load-data', data)
 }) 

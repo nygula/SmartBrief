@@ -119,4 +119,45 @@ ipcMain.handle('save-settings', async (event, settings) => {
     console.error('保存设置文件失败:', error)
     throw new Error('保存设置文件失败: ' + error.message)
   }
+})
+
+// 保存数据
+ipcMain.handle('save-data', async (event, { fileName, directory, data }) => {
+  try {
+    const filePath = path.join(directory, fileName)
+    
+    // 确保目录存在
+    if (!fs.existsSync(directory)) {
+      fs.mkdirSync(directory, { recursive: true })
+    }
+    
+    // 写入文件
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
+    return { success: true, path: filePath }
+  } catch (error) {
+    console.error('保存数据失败:', error)
+    throw new Error('保存数据失败: ' + error.message)
+  }
+})
+
+// 加载数据
+ipcMain.handle('load-data', async (event, { fileName, directory }) => {
+  try {
+    const filePath = path.join(directory, fileName)
+    
+    // 检查文件是否存在
+    if (!fs.existsSync(filePath)) {
+      // 如果文件不存在，创建一个空文件
+      fs.writeFileSync(filePath, JSON.stringify([]))
+      return []
+    }
+    
+    // 读取文件
+    const data = fs.readFileSync(filePath, 'utf8')
+    return JSON.parse(data)
+  } catch (error) {
+    console.error('加载数据失败:', error)
+    // 如果出错，返回空数组而不是抛出错误
+    return []
+  }
 }) 
