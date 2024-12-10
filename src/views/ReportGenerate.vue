@@ -24,8 +24,12 @@
             <div class="project-header">
               <div class="directory-input">
                 <input type="text" :value="project.path" readonly>
-                <button class="remove-button" @click="removeProject(index)">
-                  <i class="remove-icon"></i>
+                <button class="delete-btn" @click="removeProject(index)" title="删除项目">
+                  <span class="btn-content">
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                      <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </span>
                 </button>
               </div>
             </div>
@@ -474,20 +478,60 @@ input:focus, select:focus, textarea:focus {
   cursor: default;
 }
 
-.remove-button {
-  padding: 8px;
-  background: rgba(255, 59, 48, 0.1);
-  border: 1px solid rgba(255, 59, 48, 0.3);
+.delete-btn {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
   border-radius: 8px;
+  background: transparent;
   cursor: pointer;
+  isolation: isolate;
+}
+
+.delete-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  padding: 1px;
+  background: linear-gradient(45deg, #646cff, #ff3b30);
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.btn-content {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  width: 100%;
+  height: 100%;
+  color: var(--text-light);
+  opacity: 0.6;
+  transition: all 0.2s ease;
 }
 
-.remove-button:hover {
-  background: rgba(255, 59, 48, 0.2);
+.delete-btn:hover .btn-content {
+  color: #ff3b30;
+  opacity: 1;
+}
+
+.delete-btn:hover::before {
+  background: linear-gradient(45deg, #ff3b30, #646cff);
+}
+
+.directory-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .add-project-btn {
@@ -553,12 +597,6 @@ input:focus, select:focus, textarea:focus {
 
 .project-header {
   margin-bottom: 10px;
-}
-
-.directory-input {
-  display: flex;
-  gap: 10px;
-  align-items: center;
 }
 
 .project-dates {
