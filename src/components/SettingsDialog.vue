@@ -14,29 +14,6 @@
         </div>
         
         <div class="dialog-body">
-          <!-- 数据目录设置 -->
-          <div class="setting-section">
-            <div class="section-header">
-              <i class="folder-icon"></i>
-              <h3>基础设置</h3>
-            </div>
-            <div class="setting-item">
-              <label>数据保存目录：</label>
-              <div class="directory-selector">
-                <input 
-                  type="text" 
-                  v-model="settings.dataDirectory" 
-                  readonly 
-                  placeholder="请选择数据保存目录"
-                >
-                <button @click="selectDirectory" class="secondary-button">
-                  <i class="folder-open-icon"></i>
-                  选择目录
-                </button>
-              </div>
-            </div>
-          </div>
-
           <!-- API 配置部分 -->
           <div class="setting-section">
             <div class="section-header">
@@ -109,7 +86,6 @@ export default {
   data() {
     return {
       settings: {
-        dataDirectory: '',
         api: {
           modelType: 'chatgpt',
           url: '',
@@ -121,23 +97,9 @@ export default {
   },
   
   methods: {
-    async selectDirectory() {
-      try {
-        const directory = await window.electronAPI.selectDirectory()
-        if (directory) {
-          this.settings.dataDirectory = directory
-        }
-      } catch (error) {
-        console.error('选择目录失败:', error)
-        alert('选择目录失败: ' + error.message)
-      }
-    },
-    
     async saveSettings() {
       try {
-        // 创建一个纯数据对象用于保存
         const settingsToSave = {
-          dataDirectory: this.settings.dataDirectory || '',
           api: {
             modelType: this.settings.api?.modelType || 'chatgpt',
             url: this.settings.api?.url || '',
@@ -145,11 +107,6 @@ export default {
             modelName: this.settings.api?.modelName || ''
           }
         }
-        
-        // 确保所有字段都是字符串类型
-        settingsToSave.api.url = String(settingsToSave.api.url)
-        settingsToSave.api.apiKey = String(settingsToSave.api.apiKey)
-        settingsToSave.api.modelName = String(settingsToSave.api.modelName)
         
         await window.electronAPI.saveSettings(settingsToSave)
         this.$emit('settings-saved', settingsToSave)
@@ -164,11 +121,9 @@ export default {
   
   async mounted() {
     try {
-      // 加载设置
       const settings = await window.electronAPI.loadSettings()
       if (settings) {
         this.settings = {
-          dataDirectory: settings.dataDirectory || '',
           api: {
             modelType: settings.api?.modelType || 'chatgpt',
             url: settings.api?.url || '',
