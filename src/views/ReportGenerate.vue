@@ -292,8 +292,8 @@ export default {
 .config-section, .ai-section {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: 30px;
+  margin: 40px 0;
   border: 1px solid var(--border-color);
 }
 
@@ -744,5 +744,11 @@ input:focus, select:focus, textarea:focus {
 /* 确保删除按钮样式保持不变 */
 .delete-btn {
   flex-shrink: 0;
+}
+
+.ai-options {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
 }
 </style> 
