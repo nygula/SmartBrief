@@ -1,8 +1,0 @@
-{
-  "dataDirectory": "path/to/data",
-  "api": {
-    "modelType": "chatgpt",
-    "apiKey": "your-api-key",
-    "url": "optional-api-url"
-  }
-} 
