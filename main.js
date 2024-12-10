@@ -205,7 +205,19 @@ app.whenReady().then(async () => {
   })
 
   ipcMain.handle('load-settings', async () => {
-    return await initSettings()
+    try {
+      const cacheDir = ensureCacheDirectory()
+      const settingsPath = path.join(cacheDir, 'settings.json')
+      
+      if (fs.existsSync(settingsPath)) {
+        const data = await fs.promises.readFile(settingsPath, 'utf8')
+        return JSON.parse(data)
+      }
+      return null
+    } catch (err) {
+      console.error('加载设置失败:', err)
+      return null
+    }
   })
 
   ipcMain.handle('execute-command', async (event, { command, cwd }) => {

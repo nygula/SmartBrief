@@ -221,11 +221,8 @@ export default {
         const aiConfigText = `分析深度: ${this.config.aiDepth}, 自定义提示词: ${this.config.customPrompt}`;
 
         // 4. 调用 API 服务
-        const apiResponse = await this.callAIService(
-          taskText,
-          gitLogText,
-          aiConfigText
-        );
+        const prompt = `${taskText}\n\n${gitLogText}\n\n${aiConfigText}`;
+        const apiResponse = await aiManager.generateReport(prompt);
 
         // 5. 展示 API 返回结果
         alert(`AI 分析结果:\n${apiResponse}`);

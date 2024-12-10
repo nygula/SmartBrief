@@ -87,7 +87,7 @@ export default {
     return {
       settings: {
         api: {
-          modelType: 'chatgpt',
+          modelType: '',
           url: '',
           apiKey: '',
           modelName: ''
@@ -121,17 +121,19 @@ export default {
   
   async mounted() {
     try {
+      // 从 cache 目录加载设置
       const settings = await window.electronAPI.loadSettings()
-      if (settings) {
-        this.settings = {
-          api: {
-            modelType: settings.api?.modelType || 'chatgpt',
-            url: settings.api?.url || '',
-            apiKey: settings.api?.apiKey || '',
-            modelName: settings.api?.modelName || ''
-          }
+      if (settings?.api) {
+        // 使用解构赋值确保所有字段都被正确赋值
+        const { modelType, url, apiKey, modelName } = settings.api
+        this.settings.api = {
+          modelType: modelType || 'chatgpt',  // 如果没有值才使用默认值
+          url: url || '',
+          apiKey: apiKey || '',
+          modelName: modelName || ''
         }
       }
+      console.log('加载的设置:', this.settings) // 添加日志用于调试
     } catch (error) {
       console.error('加载设置失败:', error)
     }
