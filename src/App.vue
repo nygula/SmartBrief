@@ -41,8 +41,8 @@
             </svg>
             
             <div class="title-container">
-              <h1 class="title">量子慧眼</h1>
-              <div class="subtitle">QuanTech Vision</div>
+              <h1 class="title">SmartBrief</h1>
+              <div class="subtitle">Fuck Report</div>
             </div>
           </div>
 
@@ -159,6 +159,7 @@ export default {
   line-height: 1.2;
   background: var(--primary-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   font-size: 2em;
   font-weight: bold;
@@ -168,7 +169,7 @@ export default {
 
 .subtitle {
   color: var(--text-light);
-  font-size: 1.2em;
+  font-size: 0.8em;
   letter-spacing: 2px;
 }
 
