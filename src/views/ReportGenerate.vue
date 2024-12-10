@@ -23,7 +23,10 @@
           <div v-for="(project, index) in projects" :key="index" class="project-item">
             <div class="project-header">
               <div class="directory-input">
-                <input type="text" :value="project.path" readonly>
+                <div class="path-display" :title="project.path">
+                  <span class="path-text">{{ formatPath(project.path) }}</span>
+                  <div class="path-tooltip">{{ project.path }}</div>
+                </div>
                 <button class="delete-btn" @click="removeProject(index)" title="删除项目">
                   <span class="btn-content">
                     <svg viewBox="0 0 24 24" width="16" height="16">
@@ -245,6 +248,18 @@ export default {
           project.startDate = value
         }
       }
+    },
+    formatPath(path) {
+      if (!path) return '';
+      const parts = path.split(/[/\\]/);
+      if (parts.length <= 3) return path;
+      
+      // 保留开头的驱动器（如 C:）或根目录（如 /）
+      let start = parts[0].includes(':') ? parts[0] + '\\' : '/';
+      // 保留最后两级目录
+      let end = parts.slice(-2).join('/');
+      
+      return `${start}/.../${end}`;
     }
   }
 }
@@ -531,7 +546,8 @@ input:focus, select:focus, textarea:focus {
 .directory-input {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  width: 100%;
 }
 
 .add-project-btn {
@@ -585,21 +601,148 @@ input:focus, select:focus, textarea:focus {
 .projects-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .project-item {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 15px;
+  border-radius: 12px;
+  padding: 20px;
   border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .project-header {
-  margin-bottom: 10px;
+  width: 100%;
+}
+
+.directory-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.path-display {
+  flex: 1;
+  padding: 12px 16px;
+  background: var(--input-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  cursor: default;
 }
 
 .project-dates {
-  margin-top: 10px;
+  width: 100%;
+}
+
+.date-range {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: flex-start;
+}
+
+.date-range input[type="date"] {
+  padding: 10px 16px;
+  width: 180px;
+  background: var(--input-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-light);
+  font-size: 0.9em;
+}
+
+.date-separator {
+  color: var(--text-light);
+  font-size: 0.9em;
+  margin: 0 8px;
+}
+
+.add-project-btn {
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+.path-tooltip {
+  max-width: 600px;
+  white-space: normal;
+  word-break: break-all;
+}
+
+.path-display:hover,
+.date-range input[type="date"]:hover {
+  border-color: var(--primary-color);
+}
+
+.date-range input[type="date"]:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
+}
+
+.path-text {
+  display: block;
+  color: var(--text-light);
+  font-size: 0.9em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.path-tooltip {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: #333;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-light);
+  font-size: 0.9em;
+  word-break: break-all;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+}
+
+.path-tooltip::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 20px;
+  width: 10px;
+  height: 10px;
+  background: #333;
+  border-left: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-color);
+  transform: rotate(45deg);
+}
+
+.path-display:hover .path-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.directory-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+/* 确保删除按钮样式保持不变 */
+.delete-btn {
+  flex-shrink: 0;
 }
 </style> 
