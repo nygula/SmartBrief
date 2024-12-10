@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 加载设置
   loadSettings: () => ipcRenderer.invoke('settings:load'),
   saveData: (data) => ipcRenderer.invoke('save-data', data),
-  loadData: (data) => ipcRenderer.invoke('load-data', data)
+  loadData: (data) => ipcRenderer.invoke('load-data', data),
+  executeCommand: (options) => ipcRenderer.invoke('execute-command', options)
 }) 

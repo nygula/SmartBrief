@@ -3,6 +3,7 @@ const path = require('path')
 const fs = require('fs')
 const { initGitService } = require('./services/gitService')
 const { saveData, loadData } = require('./services/storageService')
+const { exec } = require('child_process')
 
 let mainWindow
 
@@ -205,6 +206,17 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('load-settings', async () => {
     return await initSettings()
+  })
+
+  ipcMain.handle('execute-command', async (event, { command, cwd }) => {
+    return new Promise((resolve) => {
+      exec(command, { cwd }, (error, stdout, stderr) => {
+        resolve({
+          error: error?.message || stderr,
+          output: stdout
+        })
+      })
+    })
   })
 })
 

@@ -116,6 +116,7 @@
 
 <script>
 import { dataService } from '../services/dataService'
+import { EventBus } from '../eventBus'
 
 export default {
   name: 'TaskList',
@@ -156,6 +157,7 @@ export default {
       
       this.tasks.push(task)
       await this.saveTaskList()
+      EventBus.emit('taskListUpdated', this.tasks)
       
       // 重置表单
       this.newTask = {
@@ -170,11 +172,13 @@ export default {
     async deleteTask(taskId) {
       this.tasks = this.tasks.filter(task => task.id !== taskId)
       await this.saveTaskList()
+      EventBus.emit('taskListUpdated', this.tasks)
     },
     
     async saveTaskList() {
       try {
         await dataService.saveTaskList(this.tasks)
+        EventBus.emit('taskListUpdated', this.tasks)
       } catch (error) {
         console.error('保存任务列表失败:', error)
         alert('保存任务列表失败: ' + error.message)

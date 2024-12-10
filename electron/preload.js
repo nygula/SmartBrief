@@ -1,7 +1,8 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  selectDirectory: () => ipcRenderer.invoke('dialog:selectDirectory'),
-  saveSettings: (settings) => ipcRenderer.invoke('settings:save', settings),
-  loadSettings: () => ipcRenderer.invoke('settings:load')
+  loadSettings: () => ipcRenderer.invoke('load-settings'),
+  saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
+  selectDirectory: () => ipcRenderer.invoke('select-directory'),
+  executeCommand: (options) => ipcRenderer.invoke('execute-command', options)
 }) 

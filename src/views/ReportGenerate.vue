@@ -149,6 +149,8 @@
 
 <script>
 import { dataService } from '../services/dataService'
+import { EventBus } from '../eventBus'
+import { aiManager } from '../services/ai/AIServiceFactory'
 
 export default {
   name: 'ReportGenerate',
@@ -173,7 +175,8 @@ export default {
       selectedTags: [],
       isGenerating: false,
       generationProgress: 0,
-      progressStatus: ''
+      progressStatus: '',
+      tasks: []
     }
   },
   methods: {
@@ -189,7 +192,92 @@ export default {
       }
     },
     async previewReport() {
-      // 实现预览逻辑
+      try {
+        // 1. 获取任务列表数据
+        const tasks = await this.getTaskListData()
+        const taskText = tasks.map(task => `任务: ${task.name}, 优先级: ${task.priority}, 进度: ${task.progress}%`).join('\n')
+
+        // 2. 获取 Git 日志
+        const gitLogs = await this.getGitLogs()
+        const gitLogText = gitLogs.join('\n')
+
+        // 3. 获取 AI 分析配置数据
+        const aiConfigText = `分析深度: ${this.config.aiDepth}, 自定义提示词: ${this.config.customPrompt}`
+
+        // 4. 调用 API 服务
+        const apiResponse = await this.callAIService(taskText, gitLogText, aiConfigText)
+
+        // 5. 展示 API 返回结果
+        alert(`AI 分析结果:\n${apiResponse}`)
+      } catch (error) {
+        console.error('预览报告失败:', error)
+      }
+    },
+
+    async getTaskListData() {
+      return this.tasks
+    },
+
+    async getGitLogs() {
+      const logs = []
+      for (const project of this.projects) {
+        const { startDate, endDate, path } = project
+        const log = await this.runGitCommand(path, startDate, endDate)
+        logs.push(`项目: ${path}\n${log}`)
+      }
+      return logs
+    },
+
+    async runGitCommand(directory, startDate, endDate) {
+      try {
+        // 检查 API 是否存在
+        if (!window.electronAPI?.executeCommand) {
+          console.warn('executeCommand API 未定义，尝试使用模拟数据')
+          // 返回模拟数据用于开发测试
+          return `模拟的 Git 日志数据 (${startDate} 至 ${endDate})\n` +
+                 `2024-03-15 [开发者] 示例提交信息\n` +
+                 `2024-03-14 [开发者] 另一个示例提交`;
+        }
+
+        // 格式化日期为 Git 可识别的格式
+        const start = new Date(startDate).toISOString().split('T')[0]
+        const end = new Date(endDate).toISOString().split('T')[0]
+
+        // 构建 Git 日志命令
+        const command = `git log --pretty=format:"%ad [%an] %s" --date=format:"%Y-%m-%d %H:%M" --since="${start}" --until="${end}"`
+
+        // 调用主进程执行 Git 命令
+        const result = await window.electronAPI.executeCommand({
+          command,
+          cwd: directory
+        })
+
+        if (result.error) {
+          console.warn(`Git 命令执行警告: ${result.error}`)
+          return `获取 Git 日志出现问题: ${result.error}`
+        }
+
+        // 如果没有提交记录，返回提示信息
+        if (!result.output.trim()) {
+          return `该时间段内没有提交记录 (${start} 至 ${end})`
+        }
+
+        return result.output
+      } catch (error) {
+        console.error('执行 Git 命令失败:', error)
+        return `获取 Git 日志失败: ${error.message}`
+      }
+    },
+
+    async callAIService(taskText, gitLogText, aiConfigText) {
+      try {
+        // 使用 AIManager 调用 API 服务
+        const prompt = `${taskText}\n\n${gitLogText}\n\n${aiConfigText}`
+        return await aiManager.generateReport(prompt)
+      } catch (error) {
+        console.error('AI 服务调用失败:', error)
+        throw error
+      }
     },
     async generateReport() {
       this.isGenerating = true
@@ -308,10 +396,24 @@ export default {
         dataService.setDataDirectory(settings.dataDirectory)
         await this.loadReportConfig()
       }
+      // 初始化 AI 服务
+      if (settings?.api) {
+        aiManager.initializeService(settings)
+      } else {
+        console.warn('未找到 AI 服务配置')
+      }
     } catch (error) {
       console.error('初始化报告配置失败:', error)
       this.selectedTags = []
     }
+    EventBus.on('taskListUpdated', (tasks) => {
+      this.tasks = tasks
+    })
+  },
+  
+  beforeUnmount() {
+    // 清理事件监听
+    EventBus.off('taskListUpdated')
   },
   
   watch: {
