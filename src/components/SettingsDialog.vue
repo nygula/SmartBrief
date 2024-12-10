@@ -44,106 +44,43 @@
               <h3>AI 模型配置</h3>
             </div>
             
-            <!-- API 基础信息 -->
+            <!-- 模型类型选择 -->
             <div class="setting-item with-hover">
-              <label>API 名称：</label>
-              <input 
-                type="text" 
-                v-model="settings.api.name"
-                placeholder="例如：ChatGPT API"
-              >
+              <label>大模型类型：</label>
+              <select v-model="settings.api.modelType" class="model-select">
+                <option value="chatgpt">ChatGPT</option>
+                <option value="doubao">豆包</option>
+                <option value="qianwen">通义千问</option>
+                <option value="wenxin">文心一言</option>
+              </select>
             </div>
 
+            <!-- API 基础信息 -->
             <div class="setting-item with-hover">
-              <label>请求 URL：</label>
+              <label>API URL：</label>
               <input 
                 type="text" 
                 v-model="settings.api.url"
-                placeholder="输入完整的 API URL"
+                :placeholder="getUrlPlaceholder"
               >
             </div>
 
-            <!-- Headers 配置 -->
             <div class="setting-item with-hover">
-              <label>Headers：</label>
-              <div class="headers-container">
-                <transition-group name="list" tag="div">
-                  <div v-for="(header, index) in settings.api.headers" 
-                       :key="index" 
-                       class="header-item">
-                    <input 
-                      type="text" 
-                      v-model="header.key"
-                      placeholder="Key"
-                      class="header-input"
-                    >
-                    <input 
-                      type="text" 
-                      v-model="header.value"
-                      placeholder="Value"
-                      class="header-input"
-                    >
-                    <button 
-                      @click="removeHeader(index)"
-                      class="delete-button"
-                    >×</button>
-                  </div>
-                </transition-group>
-                <button 
-                  @click="addHeader"
-                  class="add-button"
-                >
-                  <i class="plus-icon"></i>
-                  添加 Header
-                </button>
-              </div>
+              <label>API Key：</label>
+              <input 
+                type="password" 
+                v-model="settings.api.apiKey"
+                placeholder="请输入 API Key"
+              >
             </div>
 
-            <!-- Parameters 配置 -->
             <div class="setting-item with-hover">
-              <label>Parameters：</label>
-              <div class="params-container">
-                <transition-group name="list" tag="div">
-                  <div v-for="(param, index) in settings.api.parameters" 
-                       :key="index" 
-                       class="param-item">
-                    <input 
-                      type="text" 
-                      v-model="param.key"
-                      placeholder="Key"
-                      class="param-input"
-                    >
-                    <input 
-                      type="text" 
-                      v-model="param.value"
-                      placeholder="Value"
-                      class="param-input"
-                    >
-                    <button 
-                      @click="removeParam(index)"
-                      class="delete-button"
-                    >×</button>
-                  </div>
-                </transition-group>
-                <button 
-                  @click="addParam"
-                  class="add-button"
-                >
-                  <i class="plus-icon"></i>
-                  添加 Parameter
-                </button>
-              </div>
-            </div>
-
-            <!-- Request Body 配置 -->
-            <div class="setting-item with-hover">
-              <label>Request Body：</label>
-              <textarea 
-                v-model="settings.api.body"
-                placeholder="输入 JSON 格式的请求体"
-                rows="5"
-                class="body-input"
-              ></textarea>
+              <label>模型名称：</label>
+              <input 
+                type="text" 
+                v-model="settings.api.modelName"
+                :placeholder="getModelNamePlaceholder"
+              >
             </div>
           </div>
         </div>
@@ -175,13 +112,34 @@ export default {
       settings: {
         dataDirectory: '',
         api: {
-          name: '',
+          modelType: 'chatgpt',
           url: '',
-          headers: [],
-          parameters: [],
-          body: ''
+          apiKey: '',
+          modelName: ''
         }
       }
+    }
+  },
+
+  computed: {
+    getUrlPlaceholder() {
+      const placeholders = {
+        chatgpt: 'https://api.openai.com/v1/chat/completions',
+        doubao: '豆包 API 地址',
+        qianwen: '通义千问 API 地址',
+        wenxin: '文心一言 API 地址'
+      }
+      return placeholders[this.settings.api.modelType]
+    },
+
+    getModelNamePlaceholder() {
+      const placeholders = {
+        chatgpt: 'gpt-3.5-turbo',
+        doubao: 'DBAI-4',
+        qianwen: 'qwen-turbo',
+        wenxin: 'ERNIE-Bot-4'
+      }
+      return placeholders[this.settings.api.modelType]
     }
   },
 
@@ -202,22 +160,6 @@ export default {
       }
     },
 
-    addHeader() {
-      this.settings.api.headers.push({ key: '', value: '' })
-    },
-
-    removeHeader(index) {
-      this.settings.api.headers.splice(index, 1)
-    },
-
-    addParam() {
-      this.settings.api.parameters.push({ key: '', value: '' })
-    },
-
-    removeParam(index) {
-      this.settings.api.parameters.splice(index, 1)
-    },
-
     validateSettings() {
       if (!this.settings.dataDirectory) {
         throw new Error('请选择数据保存目录')
@@ -225,12 +167,11 @@ export default {
       if (!this.settings.api.url) {
         throw new Error('请输入 API URL')
       }
-      if (this.settings.api.body) {
-        try {
-          JSON.parse(this.settings.api.body)
-        } catch (e) {
-          throw new Error('Request Body 必须是有效的 JSON 格式')
-        }
+      if (!this.settings.api.apiKey) {
+        throw new Error('请输入 API Key')
+      }
+      if (!this.settings.api.modelName) {
+        throw new Error('请输入模型名称')
       }
     },
 
@@ -686,5 +627,23 @@ textarea:focus {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* 添加下拉框样式 */
+.model-select {
+  width: 100%;
+  padding: 10px;
+  background: var(--input-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.model-select:focus {
+  border-color: var(--accent-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 102, 102, 0.1);
 }
 </style> 
