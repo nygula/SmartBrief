@@ -20,17 +20,28 @@
       <div class="projects-config">
         <label>项目配置</label>
         <div class="projects-list">
-          <div v-for="(project, index) in projects" :key="index" class="project-item">
+          <div
+            v-for="(project, index) in projects"
+            :key="index"
+            class="project-item"
+          >
             <div class="project-header">
               <div class="directory-input">
                 <div class="path-display" :title="project.path">
                   <span class="path-text">{{ formatPath(project.path) }}</span>
                   <div class="path-tooltip">{{ project.path }}</div>
                 </div>
-                <button class="delete-btn" @click="removeProject(index)" title="删除项目">
+                <button
+                  class="delete-btn"
+                  @click="removeProject(index)"
+                  title="删除项目"
+                >
                   <span class="btn-content">
                     <svg viewBox="0 0 24 24" width="16" height="16">
-                      <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                      <path
+                        fill="currentColor"
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                      />
                     </svg>
                   </span>
                 </button>
@@ -38,17 +49,17 @@
             </div>
             <div class="project-dates">
               <div class="date-range">
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   v-model="project.startDate"
-                  @change="e => handleProjectDateChange(index, 'start', e)"
-                >
+                  @change="(e) => handleProjectDateChange(index, 'start', e)"
+                />
                 <span class="date-separator">至</span>
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   v-model="project.endDate"
-                  @change="e => handleProjectDateChange(index, 'end', e)"
-                >
+                  @change="(e) => handleProjectDateChange(index, 'end', e)"
+                />
               </div>
             </div>
           </div>
@@ -63,15 +74,15 @@
         <label>包含内容</label>
         <div class="checkbox-group">
           <label class="checkbox-label">
-            <input type="checkbox" v-model="config.includeCommits">
+            <input type="checkbox" v-model="config.includeCommits" />
             <span>代码提交</span>
           </label>
           <label class="checkbox-label">
-            <input type="checkbox" v-model="config.includeTasks">
+            <input type="checkbox" v-model="config.includeTasks" />
             <span>任务进度</span>
           </label>
           <label class="checkbox-label">
-            <input type="checkbox" v-model="config.includeStats">
+            <input type="checkbox" v-model="config.includeStats" />
             <span>统计数据</span>
           </label>
         </div>
@@ -98,8 +109,8 @@
         <div class="input-group">
           <label>关注点</label>
           <div class="tag-selector">
-            <div 
-              v-for="tag in availableTags" 
+            <div
+              v-for="tag in availableTags"
               :key="tag.id"
               :class="['tag', { active: selectedTags.includes(tag.id) }]"
               @click="toggleTag(tag.id)"
@@ -111,7 +122,7 @@
 
         <div class="input-group full-width">
           <label>自定义提示词</label>
-          <textarea 
+          <textarea
             v-model="config.customPrompt"
             placeholder="输入自定义的 AI 分析提示词"
             rows="3"
@@ -135,7 +146,7 @@
     <!-- 生成进度 -->
     <div v-if="isGenerating" class="generation-progress">
       <div class="progress-bar">
-        <div 
+        <div
           class="progress-fill"
           :style="{ width: generationProgress + '%' }"
         ></div>
@@ -148,210 +159,227 @@
 </template>
 
 <script>
-import { dataService } from '../services/dataService'
-import { EventBus } from '../eventBus'
-import { aiManager } from '../services/ai/AIServiceFactory'
+import { dataService } from "../services/dataService";
+import { EventBus } from "../eventBus";
+import { aiManager } from "../services/ai/AIServiceFactory";
 
 export default {
-  name: 'ReportGenerate',
+  name: "ReportGenerate",
   data() {
     return {
       config: {
-        reportType: 'weekly',
+        reportType: "weekly",
         includeCommits: true,
         includeTasks: true,
         includeStats: true,
-        aiDepth: 'detailed',
-        customPrompt: ''
+        aiDepth: "detailed",
+        customPrompt: "",
       },
       projects: [],
       availableTags: [
-        { id: 1, name: '代码质量' },
-        { id: 2, name: '进度分析' },
-        { id: 3, name: '性能优化' },
-        { id: 4, name: '安全性' },
-        { id: 5, name: '最佳实践' }
+        { id: 1, name: "代码质量" },
+        { id: 2, name: "进度分析" },
+        { id: 3, name: "性能优化" },
+        { id: 4, name: "安全性" },
+        { id: 5, name: "最佳实践" },
       ],
       selectedTags: [],
       isGenerating: false,
       generationProgress: 0,
-      progressStatus: '',
-      tasks: []
-    }
+      progressStatus: "",
+      tasks: [],
+    };
   },
   methods: {
     toggleTag(tagId) {
       if (!this.selectedTags) {
-        this.selectedTags = []
+        this.selectedTags = [];
       }
-      const index = this.selectedTags.indexOf(tagId)
+      const index = this.selectedTags.indexOf(tagId);
       if (index === -1) {
-        this.selectedTags.push(tagId)
+        this.selectedTags.push(tagId);
       } else {
-        this.selectedTags.splice(index, 1)
+        this.selectedTags.splice(index, 1);
       }
     },
     async previewReport() {
       try {
         // 1. 获取任务列表数据
-        const tasks = await this.getTaskListData()
-        const taskText = tasks.map(task => `任务: ${task.name}, 优先级: ${task.priority}, 进度: ${task.progress}%`).join('\n')
+        const tasks = await this.getTaskListData();
+        const taskText = tasks
+          .map(
+            (task) =>
+              `任务: ${task.name}, 优先级: ${task.priority}, 进度: ${task.progress}%`
+          )
+          .join("\n");
 
         // 2. 获取 Git 日志
-        const gitLogs = await this.getGitLogs()
-        const gitLogText = gitLogs.join('\n')
+        const gitLogs = await this.getGitLogs();
+        const gitLogText = gitLogs.join("\n");
 
         // 3. 获取 AI 分析配置数据
-        const aiConfigText = `分析深度: ${this.config.aiDepth}, 自定义提示词: ${this.config.customPrompt}`
+        const aiConfigText = `分析深度: ${this.config.aiDepth}, 自定义提示词: ${this.config.customPrompt}`;
 
         // 4. 调用 API 服务
-        const apiResponse = await this.callAIService(taskText, gitLogText, aiConfigText)
+        const apiResponse = await this.callAIService(
+          taskText,
+          gitLogText,
+          aiConfigText
+        );
 
         // 5. 展示 API 返回结果
-        alert(`AI 分析结果:\n${apiResponse}`)
+        alert(`AI 分析结果:\n${apiResponse}`);
       } catch (error) {
-        console.error('预览报告失败:', error)
+        console.error("预览报告失败:", error);
       }
     },
 
     async getTaskListData() {
-      return this.tasks
+      return this.tasks;
     },
 
     async getGitLogs() {
-      const logs = []
+      const logs = [];
       for (const project of this.projects) {
-        const { startDate, endDate, path } = project
-        const log = await this.runGitCommand(path, startDate, endDate)
-        logs.push(`项目: ${path}\n${log}`)
+        const { startDate, endDate, path } = project;
+        const log = await this.runGitCommand(path, startDate, endDate);
+        logs.push(`项目: ${path}\n${log}`);
       }
-      return logs
+      return logs;
     },
 
     async runGitCommand(directory, startDate, endDate) {
       try {
-        // 检查 API 是否存在
+        // 添加日志输出
+        console.log("开始获取Git提交数据:");
+        console.log(`目录: ${directory}`);
+        console.log(`开始日期: ${startDate}`);
+        console.log(`结束日期: ${endDate}`);
+
         if (!window.electronAPI?.executeCommand) {
-          console.warn('executeCommand API 未定义，尝试使用模拟数据')
-          // 返回模拟数据用于开发测试
-          return `模拟的 Git 日志数据 (${startDate} 至 ${endDate})\n` +
-                 `2024-03-15 [开发者] 示例提交信息\n` +
-                 `2024-03-14 [开发者] 另一个示例提交`;
+          console.warn("executeCommand API未定义,使用模拟数据");
+          const mockData =
+            `模拟的Git日志数据 (${startDate} 至 ${endDate})\n` +
+            `2024-03-15 [开发者] 示例提交信息\n` +
+            `2024-03-14 [开发者] 另一个示例提交`;
+          console.log("模拟数据:", mockData);
+          return mockData;
         }
 
-        // 格式化日期为 Git 可识别的格式
-        const start = new Date(startDate).toISOString().split('T')[0]
-        const end = new Date(endDate).toISOString().split('T')[0]
+        const start = new Date(startDate).toISOString().split("T")[0];
+        const end = new Date(endDate).toISOString().split("T")[0];
+        const command = `git log --pretty=format:"%ad [%an] %s" --date=format:"%Y-%m-%d %H:%M" --since="${start}" --until="${end}"`;
 
-        // 构建 Git 日志命令
-        const command = `git log --pretty=format:"%ad [%an] %s" --date=format:"%Y-%m-%d %H:%M" --since="${start}" --until="${end}"`
+        console.log("执行Git命令:", command);
 
-        // 调用主进程执行 Git 命令
         const result = await window.electronAPI.executeCommand({
           command,
-          cwd: directory
-        })
+          cwd: directory,
+        });
 
         if (result.error) {
-          console.warn(`Git 命令执行警告: ${result.error}`)
-          return `获取 Git 日志出现问题: ${result.error}`
+          console.warn(`Git命令执行警告: ${result.error}`);
+          return `获取Git日志出现问题: ${result.error}`;
         }
 
-        // 如果没有提交记录，返回提示信息
+        // 打印获取到的Git日志
+        console.log("获取到的Git日志:", result.output);
+
         if (!result.output.trim()) {
-          return `该时间段内没有提交记录 (${start} 至 ${end})`
+          console.log(`${start} 至 ${end} 期间没有提交记录`);
+          return `该时间段内没有提交记录 (${start} 至 ${end})`;
         }
 
-        return result.output
+        return result.output;
       } catch (error) {
-        console.error('执行 Git 命令失败:', error)
-        return `获取 Git 日志失败: ${error.message}`
+        console.error("执行Git命令失败:", error);
+        return `获取Git日志失败: ${error.message}`;
       }
     },
 
     async callAIService(taskText, gitLogText, aiConfigText) {
       try {
         // 使用 AIManager 调用 API 服务
-        const prompt = `${taskText}\n\n${gitLogText}\n\n${aiConfigText}`
-        return await aiManager.generateReport(prompt)
+        const prompt = `${taskText}\n\n${gitLogText}\n\n${aiConfigText}`;
+        return await aiManager.generateReport(prompt);
       } catch (error) {
-        console.error('AI 服务调用失败:', error)
-        throw error
+        console.error("AI 服务调用失败:", error);
+        throw error;
       }
     },
     async generateReport() {
-      this.isGenerating = true
-      this.generationProgress = 0
-      this.progressStatus = '正在收集数据...'
+      this.isGenerating = true;
+      this.generationProgress = 0;
+      this.progressStatus = "正在收集数据...";
 
       // 模拟生成过程
-      await this.simulateProgress()
+      await this.simulateProgress();
 
-      this.isGenerating = false
+      this.isGenerating = false;
       // 实际生成逻辑
     },
     async simulateProgress() {
       const steps = [
-        { progress: 20, status: '分析代码提交...' },
-        { progress: 40, status: '处理任务数据...' },
-        { progress: 60, status: '生成统计图表...' },
-        { progress: 80, status: 'AI 分析中...' },
-        { progress: 100, status: '报告生成完成！' }
-      ]
+        { progress: 20, status: "分析代码提交..." },
+        { progress: 40, status: "处理任务数据..." },
+        { progress: 60, status: "生成统计图表..." },
+        { progress: 80, status: "AI 分析中..." },
+        { progress: 100, status: "报告生成完成！" },
+      ];
 
       for (const step of steps) {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        this.generationProgress = step.progress
-        this.progressStatus = step.status
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        this.generationProgress = step.progress;
+        this.progressStatus = step.status;
       }
     },
     async openDirectoryDialog() {
       try {
         if (!window.electronAPI?.selectDirectory) {
-          throw new Error('选择目录功能不可用')
+          throw new Error("选择目录功能不可用");
         }
-        
-        const directory = await window.electronAPI.selectDirectory()
-        if (directory && !this.projects.some(p => p.path === directory)) {
+
+        const directory = await window.electronAPI.selectDirectory();
+        if (directory && !this.projects.some((p) => p.path === directory)) {
           this.projects.push({
             path: directory,
-            startDate: new Date().toISOString().split('T')[0],
-            endDate: new Date().toISOString().split('T')[0]
-          })
+            startDate: new Date().toISOString().split("T")[0],
+            endDate: new Date().toISOString().split("T")[0],
+          });
         }
       } catch (error) {
-        console.error('选择目录失败:', error)
+        console.error("选择目录失败:", error);
       }
     },
     removeProject(index) {
-      this.projects.splice(index, 1)
+      this.projects.splice(index, 1);
     },
     handleProjectDateChange(projectIndex, type, event) {
-      const value = event.target.value
-      const project = this.projects[projectIndex]
-      
-      if (type === 'start') {
-        project.startDate = value
+      const value = event.target.value;
+      const project = this.projects[projectIndex];
+
+      if (type === "start") {
+        project.startDate = value;
         if (project.endDate < value) {
-          project.endDate = value
+          project.endDate = value;
         }
       } else {
-        project.endDate = value
+        project.endDate = value;
         if (project.startDate > value) {
-          project.startDate = value
+          project.startDate = value;
         }
       }
     },
     formatPath(path) {
-      if (!path) return '';
+      if (!path) return "";
       const parts = path.split(/[/\\]/);
       if (parts.length <= 3) return path;
-      
+
       // 保留开头的驱动器（如 C:）或根目录（如 /）
-      let start = parts[0].includes(':') ? parts[0] + '\\' : '/';
+      let start = parts[0].includes(":") ? parts[0] + "\\" : "/";
       // 保留最后两级目录
-      let end = parts.slice(-2).join('/');
-      
+      let end = parts.slice(-2).join("/");
+
       return `${start}/.../${end}`;
     },
     async saveReportConfig() {
@@ -359,84 +387,86 @@ export default {
         const configToSave = {
           config: { ...this.config },
           projects: [...this.projects],
-          selectedTags: [...this.selectedTags]
-        }
-        await dataService.saveReportConfig(configToSave)
+          selectedTags: [...this.selectedTags],
+        };
+        await dataService.saveReportConfig(configToSave);
       } catch (error) {
-        console.error('保存报告配置失败:', error)
+        console.error("保存报告配置失败:", error);
       }
     },
-    
+
     async loadReportConfig() {
       try {
-        const config = await dataService.loadReportConfig()
+        const config = await dataService.loadReportConfig();
         if (config) {
           this.config = {
-            reportType: config.config?.reportType || 'weekly',
+            reportType: config.config?.reportType || "weekly",
             includeCommits: config.config?.includeCommits ?? true,
             includeTasks: config.config?.includeTasks ?? true,
             includeStats: config.config?.includeStats ?? true,
-            aiDepth: config.config?.aiDepth || 'detailed',
-            customPrompt: config.config?.customPrompt || ''
-          }
-          this.projects = Array.isArray(config.projects) ? config.projects : []
-          this.selectedTags = Array.isArray(config.selectedTags) ? config.selectedTags : []
+            aiDepth: config.config?.aiDepth || "detailed",
+            customPrompt: config.config?.customPrompt || "",
+          };
+          this.projects = Array.isArray(config.projects) ? config.projects : [];
+          this.selectedTags = Array.isArray(config.selectedTags)
+            ? config.selectedTags
+            : [];
         }
       } catch (error) {
-        console.error('加载报告配置失败:', error)
-        this.selectedTags = []
+        console.error("加载报告配置失败:", error);
+        this.selectedTags = [];
       }
-    }
+    },
   },
-  
+
   async mounted() {
     try {
-      const settings = await window.electronAPI.loadSettings()
+      const settings = await window.electronAPI.loadSettings();
       if (settings?.dataDirectory) {
-        dataService.setDataDirectory(settings.dataDirectory)
-        await this.loadReportConfig()
+        dataService.setDataDirectory(settings.dataDirectory);
+        await this.loadReportConfig();
       }
       // 初始化 AI 服务
       if (settings?.api) {
-        aiManager.initializeService(settings)
+        aiManager.initializeService(settings);
       } else {
-        console.warn('未找到 AI 服务配置')
+        console.warn("未找到 AI 服务配置");
       }
     } catch (error) {
-      console.error('初始化报告配置失败:', error)
-      this.selectedTags = []
+      console.error("初始化报告配置失败:", error);
+      this.selectedTags = [];
     }
-    EventBus.on('taskListUpdated', (tasks) => {
-      this.tasks = tasks
-    })
+    EventBus.on("taskListUpdated", (tasks) => {
+      this.tasks = tasks;
+    });
   },
-  
+
   beforeUnmount() {
     // 清理事件监听
-    EventBus.off('taskListUpdated')
+    EventBus.off("taskListUpdated");
   },
-  
+
   watch: {
     // 监听配置变化自动保存
     config: {
       deep: true,
       handler() {
-        this.saveReportConfig()
-      }
+        this.saveReportConfig();
+      },
     },
     projects: {
       deep: true,
       handler() {
-        this.saveReportConfig()
-      }
+        this.saveReportConfig();
+      },
     },
     selectedTags: {
       handler() {
-        this.saveReportConfig()
-      }
-    }
-  }
-}
+        this.saveReportConfig();
+      },
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -463,7 +493,8 @@ export default {
   text-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
 }
 
-.config-section, .ai-section {
+.config-section,
+.ai-section {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 12px;
   padding: 30px;
@@ -492,7 +523,9 @@ label {
   font-size: 0.9em;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   padding: 10px;
   background: var(--input-bg);
   border: 2px solid var(--border-color);
@@ -501,7 +534,9 @@ input, select, textarea {
   transition: all 0.3s ease;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
   outline: none;
@@ -571,7 +606,8 @@ input:focus, select:focus, textarea:focus {
   margin-top: 30px;
 }
 
-.preview-button, .generate-button {
+.preview-button,
+.generate-button {
   padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
@@ -593,7 +629,8 @@ input:focus, select:focus, textarea:focus {
   border: none;
 }
 
-.preview-button:hover, .generate-button:hover {
+.preview-button:hover,
+.generate-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 0 15px rgba(100, 108, 255, 0.3);
 }
@@ -628,7 +665,10 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* 图标样式 */
-.report-icon, .ai-icon, .preview-icon, .generate-icon {
+.report-icon,
+.ai-icon,
+.preview-icon,
+.generate-icon {
   display: inline-block;
   width: 24px;
   height: 24px;
@@ -680,18 +720,14 @@ input:focus, select:focus, textarea:focus {
 }
 
 .delete-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: 8px;
   padding: 1px;
   background: linear-gradient(45deg, #646cff, #ff3b30);
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0);
-  mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }
@@ -890,7 +926,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .path-tooltip::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -5px;
   left: 20px;
@@ -925,4 +961,4 @@ input:focus, select:focus, textarea:focus {
   flex-direction: column;
   gap: 25px;
 }
-</style> 
+</style>
