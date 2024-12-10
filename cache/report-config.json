@@ -1,0 +1,18 @@
+{
+  "config": {
+    "reportType": "weekly",
+    "includeCommits": true,
+    "includeTasks": true,
+    "includeStats": true,
+    "aiDepth": "detailed",
+    "customPrompt": "分析任务日志"
+  },
+  "projects": [
+    {
+      "path": "/Users/chenhaiming/ymCode/smart_meter_ms",
+      "startDate": "2024-12-09",
+      "endDate": "2024-12-10"
+    }
+  ],
+  "selectedTags": []
+}
