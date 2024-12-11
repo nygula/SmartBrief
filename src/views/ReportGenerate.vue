@@ -155,6 +155,11 @@
         {{ progressStatus }}
       </div>
     </div>
+
+    <ReportPreviewDialog
+      v-model="showPreview"
+      :content="previewContent"
+    />
   </div>
 </template>
 
@@ -162,9 +167,13 @@
 import { dataService } from "../services/dataService";
 import { EventBus } from "../eventBus";
 import { aiManager } from "../services/ai/AIServiceFactory";
+import ReportPreviewDialog from '../components/ReportPreviewDialog.vue';
 
 export default {
   name: "ReportGenerate",
+  components: {
+    ReportPreviewDialog
+  },
   data() {
     return {
       config: {
@@ -188,6 +197,8 @@ export default {
       generationProgress: 0,
       progressStatus: "",
       tasks: [],
+      showPreview: false,
+      previewContent: '',
     };
   },
   methods: {
@@ -226,13 +237,13 @@ export default {
         // 5. 调用 AI 服务生成报告
         const reportContent = await aiManager.generateReport(prompt);
         
-        // 6. 处理生成的报告内容
-        console.log('生成的报告内容:', reportContent);
-        // TODO: 显示预览内容
+        // 6. 显示预览内容
+        this.previewContent = reportContent;
+        this.showPreview = true;
         
       } catch (error) {
         console.error("预览报告失败:", error);
-        // TODO: 显示错误提示
+        alert("预览报告失败: " + error.message);
       }
     },
 
