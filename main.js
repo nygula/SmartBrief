@@ -2,7 +2,8 @@ const { app, BrowserWindow, ipcMain, dialog, net, shell } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const { initGitService } = require(path.join(__dirname, 'services/gitService'))
-const { saveData, loadData } = require(path.join(__dirname, 'services/storageService'))
+const pathService = require('./services/pathService')
+const { saveData, loadData, ensureDirectories } = require('./services/storageService')
 const { exec } = require('child_process')
 
 let mainWindow
@@ -64,14 +65,12 @@ function ensureCacheDirectory() {
 
 // 初始化或加载设置
 async function initSettings() {
-  const cacheDir = ensureCacheDirectory()
-  const settingsPath = path.join(cacheDir, 'settings.json')
+  ensureDirectories()
   
   try {
-    if (!fs.existsSync(settingsPath)) {
-      // 创建默认设置
+    if (!fs.existsSync(pathService.settingsPath)) {
       const defaultSettings = {
-        dataDirectory: cacheDir,
+        dataDirectory: pathService.dataDir,
         api: {
           modelType: 'chatgpt',
           url: '',
@@ -79,37 +78,28 @@ async function initSettings() {
           modelName: ''
         }
       }
-      fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings, null, 2))
+      await fs.promises.writeFile(
+        pathService.settingsPath, 
+        JSON.stringify(defaultSettings, null, 2)
+      )
       return defaultSettings
     }
     
-    // 读取现有设置
-    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'))
-    // 确保设置中有数据目录，如果没有则使用默认缓存目录
+    const settings = JSON.parse(
+      await fs.promises.readFile(pathService.settingsPath, 'utf8')
+    )
     if (!settings.dataDirectory) {
-      settings.dataDirectory = cacheDir
-      fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2))
+      settings.dataDirectory = pathService.dataDir
+      await fs.promises.writeFile(
+        pathService.settingsPath,
+        JSON.stringify(settings, null, 2)
+      )
     }
     return settings
   } catch (error) {
     console.error('初始化设置失败:', error)
-    // 返回默认设置
-    return { dataDirectory: cacheDir }
+    return { dataDirectory: pathService.dataDir }
   }
-}
-
-// 确保资源目录存在
-function ensureDirectories() {
-  const directories = [
-    path.join(app.getPath('userData'), 'cache'),
-    path.join(app.getPath('userData'), 'data')
-  ]
-  
-  directories.forEach(dir => {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true })
-    }
-  })
 }
 
 // 在应用启动时初始化设置
@@ -177,31 +167,23 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('save-settings', async (event, settings) => {
     try {
-      const cacheDir = ensureCacheDirectory()
-      const settingsPath = path.join(cacheDir, 'settings.json')
-      
-      // 确保设置中包含数据目录
-      if (!settings.dataDirectory) {
-        settings.dataDirectory = cacheDir
-      }
-      
-      fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2))
-      return { success: true, path: settingsPath }
-    } catch (error) {
-      console.error('保存设置失败:', error)
-      throw new Error('保存设置失败: ' + error.message)
+      console.log('保存设置到路径:', pathService.settingsPath)
+      await fs.promises.writeFile(pathService.settingsPath, JSON.stringify(settings, null, 2))
+      return true
+    } catch (err) {
+      console.error('保存设置失败:', err)
+      throw err
     }
   })
 
   // 保存数据
-  ipcMain.handle('save-data', async (event, { fileName, directory, data }) => {
+  ipcMain.handle('save-data', async (event, { fileName, data }) => {
     try {
-      const filePath = path.join(directory, fileName)
+      const filePath = pathService.getDataPath(fileName)
+      console.log('保存数据到路径:', filePath)
       
-      // 确保目录存在
-      if (!fs.existsSync(directory)) {
-        fs.mkdirSync(directory, { recursive: true })
-      }
+      // 确保数据目录存在
+      ensureDirectories()
       
       // 写入文件
       fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
@@ -213,13 +195,14 @@ app.whenReady().then(async () => {
   })
 
   // 加载数据
-  ipcMain.handle('load-data', async (event, { fileName, directory }) => {
+  ipcMain.handle('load-data', async (event, { fileName }) => {
     try {
-      const filePath = path.join(directory, fileName)
+      const filePath = pathService.getDataPath(fileName)
+      console.log('从路径加载数据:', filePath)
       
       // 检查文件是否存在
       if (!fs.existsSync(filePath)) {
-        // 如果文件不存在，创建一个空文件
+        console.log('文件不存在，创建新文件:', filePath)
         fs.writeFileSync(filePath, JSON.stringify([]))
         return []
       }
@@ -229,24 +212,21 @@ app.whenReady().then(async () => {
       return JSON.parse(data)
     } catch (error) {
       console.error('加载数据失败:', error)
-      // 如果出错，返回空数组而不是抛出错误
       return []
     }
   })
 
   ipcMain.handle('load-settings', async () => {
     try {
-      const cacheDir = ensureCacheDirectory()
-      const settingsPath = path.join(cacheDir, 'settings.json')
-      
-      if (fs.existsSync(settingsPath)) {
-        const data = await fs.promises.readFile(settingsPath, 'utf8')
-        return JSON.parse(data)
-      }
-      return null
+      console.log('从路径加载设置:', pathService.settingsPath)
+      const data = await fs.promises.readFile(pathService.settingsPath, 'utf8')
+      return JSON.parse(data)
     } catch (err) {
-      console.error('加载设置失败:', err)
-      return null
+      if (err.code === 'ENOENT') {
+        console.log('设置文件不存在:', pathService.settingsPath)
+        return null
+      }
+      throw err
     }
   })
 

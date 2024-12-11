@@ -201,29 +201,16 @@ export default {
   async mounted() {
     try {
       console.log('开始加载设置...')
-      // 从设置中获取数据目录
+      // 从标准缓存目录加载设置
       const settings = await window.electronAPI.loadSettings()
       console.log('加载到的设置:', settings)
       
-      // 确保有数据目录
-      if (settings?.dataDirectory) {
-        console.log('设置数据目录:', settings.dataDirectory)
-        dataService.setDataDirectory(settings.dataDirectory)
-        await this.loadTaskList()
-      } else {
-        console.warn('未找到数据目录配置，使用默认配置')
-        const dirs = await window.electronAPI.getAppDirectories()
-        dataService.setDataDirectory(dirs.data)
-      }
+      // 直接加载任务列表，不需要设置数据目录
+      await this.loadTaskList()
     } catch (error) {
       console.error('初始化失败:', error)
-      // 使用默认数据目录
-      try {
-        const dirs = await window.electronAPI.getAppDirectories()
-        dataService.setDataDirectory(dirs.data)
-      } catch (e) {
-        console.error('无法获取默认数据目录:', e)
-      }
+      // 即使出错也尝试加载任务列表
+      await this.loadTaskList()
     }
   },
   

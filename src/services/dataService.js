@@ -1,12 +1,4 @@
 class DataService {
-  constructor() {
-    this.dataDirectory = ''
-  }
-
-  setDataDirectory(directory) {
-    this.dataDirectory = directory
-  }
-
   async saveTaskList(tasks) {
     try {
       if (!window.electronAPI) {
@@ -25,7 +17,6 @@ class DataService {
 
       const result = await window.electronAPI.saveData({
         fileName: 'tasks.json',
-        directory: this.dataDirectory,
         data: cleanTasks
       })
 
@@ -44,8 +35,7 @@ class DataService {
       }
 
       const tasks = await window.electronAPI.loadData({
-        fileName: 'tasks.json',
-        directory: this.dataDirectory
+        fileName: 'tasks.json'
       })
       
       return Array.isArray(tasks) ? tasks : []
@@ -56,7 +46,6 @@ class DataService {
   }
 }
 
-// 创建单例实例
 export const dataService = new DataService()
 
 // 默认导出
