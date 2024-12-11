@@ -44,17 +44,22 @@ class BaseAIService {
 
   async makeRequest(endpoint, data) {
     try {
-      const response = await fetch(endpoint, {
+      if (!window.electronAPI?.makeAIRequest) {
+        throw new Error('makeAIRequest API 未定义');
+      }
+
+      const response = await window.electronAPI.makeAIRequest({
+        url: endpoint,
         method: 'POST',
         headers: this.getHeaders(),
-        body: JSON.stringify(data)
+        body: data
       });
 
       if (!response.ok) {
         throw new Error(`API 请求失败: ${response.status}`);
       }
 
-      return await response.json();
+      return response.data;
     } catch (error) {
       console.error('API 请求错误:', error);
       throw error;

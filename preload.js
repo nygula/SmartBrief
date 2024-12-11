@@ -10,5 +10,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loadSettings: () => ipcRenderer.invoke('load-settings'),
   saveData: (data) => ipcRenderer.invoke('save-data', data),
   loadData: (data) => ipcRenderer.invoke('load-data', data),
-  executeCommand: (options) => ipcRenderer.invoke('execute-command', options)
+  executeCommand: (options) => ipcRenderer.invoke('execute-command', options),
+  makeAIRequest: (options) => ipcRenderer.invoke('make-ai-request', options)
 }) 

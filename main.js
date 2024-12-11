@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, net } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const { initGitService } = require('./services/gitService')
@@ -230,6 +230,49 @@ app.whenReady().then(async () => {
       })
     })
   })
+
+  // 添加 AI 请求处理器
+  ipcMain.handle('make-ai-request', async (event, options) => {
+    const { url, method, headers, body } = options;
+    
+    return new Promise((resolve, reject) => {
+      const request = net.request({
+        url,
+        method: method || 'POST',
+        headers: headers || {}
+      });
+
+      request.on('response', (response) => {
+        let data = '';
+        
+        response.on('data', (chunk) => {
+          data += chunk;
+        });
+        
+        response.on('end', () => {
+          try {
+            const result = JSON.parse(data);
+            resolve({
+              ok: response.statusCode >= 200 && response.statusCode < 300,
+              status: response.statusCode,
+              data: result
+            });
+          } catch (error) {
+            reject(new Error('解析响应数据失败: ' + error.message));
+          }
+        });
+      });
+
+      request.on('error', (error) => {
+        reject(error);
+      });
+
+      if (body) {
+        request.write(JSON.stringify(body));
+      }
+      request.end();
+    });
+  });
 })
 
 app.on('window-all-closed', () => {
