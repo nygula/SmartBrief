@@ -83,6 +83,41 @@ export default {
     modelValue: Boolean
   },
   
+  computed: {
+    getUrlPlaceholder() {
+      const placeholders = {
+        chatgpt: 'https://api.openai.com/v1',
+        doubao: 'https://api.doubao.com/v1',
+        qianwen: 'https://dashscope.aliyuncs.com/api/v1',
+        wenxin: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop'
+      }
+      return placeholders[this.settings.api.modelType] || ''
+    },
+    
+    getModelNamePlaceholder() {
+      const placeholders = {
+        chatgpt: 'gpt-3.5-turbo',
+        doubao: 'dbchat-1',
+        qianwen: 'qwen-turbo',
+        wenxin: 'ernie-bot'
+      }
+      return placeholders[this.settings.api.modelType] || ''
+    }
+  },
+  
+  watch: {
+    'settings.api.modelType': {
+      handler(newType) {
+        if (!this.settings.api.url) {
+          this.settings.api.url = this.getUrlPlaceholder
+        }
+        if (!this.settings.api.modelName) {
+          this.settings.api.modelName = this.getModelNamePlaceholder
+        }
+      }
+    }
+  },
+  
   data() {
     return {
       settings: {
@@ -102,13 +137,18 @@ export default {
         const settingsToSave = {
           api: {
             modelType: this.settings.api?.modelType || 'chatgpt',
-            url: this.settings.api?.url || '',
+            url: this.settings.api?.url || this.getUrlPlaceholder,
             apiKey: this.settings.api?.apiKey || '',
-            modelName: this.settings.api?.modelName || ''
+            modelName: this.settings.api?.modelName || this.getModelNamePlaceholder
           }
         }
         
-        await window.electronAPI.saveSettings(settingsToSave)
+        // 添加日志查看保存的数据
+        console.log('正在保存设置:', settingsToSave)
+        
+        const result = await window.electronAPI.saveSettings(settingsToSave)
+        console.log('保存结果:', result)
+        
         this.$emit('settings-saved', settingsToSave)
         this.$emit('update:modelValue', false)
         alert('设置已保存')
@@ -121,19 +161,20 @@ export default {
   
   async mounted() {
     try {
-      // 从 cache 目录加载设置
+      console.log('开始加载设置...')
       const settings = await window.electronAPI.loadSettings()
+      console.log('加载到的设置:', settings)
+      
       if (settings?.api) {
-        // 使用解构赋值确保所有字段都被正确赋值
         const { modelType, url, apiKey, modelName } = settings.api
         this.settings.api = {
-          modelType: modelType || 'chatgpt',  // 如果没有值才使用默认值
+          modelType: modelType || 'chatgpt',
           url: url || '',
           apiKey: apiKey || '',
           modelName: modelName || ''
         }
+        console.log('设置已更新到组件:', this.settings)
       }
-      console.log('加载的设置:', this.settings) // 添加日志用于调试
     } catch (error) {
       console.error('加载设置失败:', error)
     }

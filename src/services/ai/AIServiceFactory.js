@@ -18,7 +18,7 @@ class ChatGPTService extends BaseAIService {
 
   async generateContent(prompt) {
     try {
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      const response = await fetch(`${this.baseUrl}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ class QianwenService extends BaseAIService {
 
   async generateContent(prompt) {
     try {
-      const response = await fetch(`${this.baseUrl}/services/aigc/text-generation/generation`, {
+      const response = await fetch(`${this.baseUrl}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ class WenxinService extends BaseAIService {
 
   async generateContent(prompt) {
     try {
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      const response = await fetch(`${this.baseUrl}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ class DoubaoService extends BaseAIService {
 
   async generateContent(prompt) {
     try {
-      const response = await fetch(`${this.baseUrl}/generate`, {
+      const response = await fetch(`${this.baseUrl}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
