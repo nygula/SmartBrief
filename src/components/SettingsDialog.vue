@@ -143,7 +143,6 @@ export default {
           }
         }
         
-        // 添加日志查看保存的数据
         console.log('正在保存设置:', settingsToSave)
         
         const result = await window.electronAPI.saveSettings(settingsToSave)
@@ -156,28 +155,22 @@ export default {
         console.error('保存设置失败:', error)
         alert('保存设置失败: ' + error.message)
       }
+    },
+    
+    async loadSettings() {
+      try {
+        const settings = await window.electronAPI.loadSettings()
+        if (settings) {
+          this.settings = settings
+        }
+      } catch (error) {
+        console.error('加载设置失败:', error)
+      }
     }
   },
   
   async mounted() {
-    try {
-      console.log('开始加载设置...')
-      const settings = await window.electronAPI.loadSettings()
-      console.log('加载到的设置:', settings)
-      
-      if (settings?.api) {
-        const { modelType, url, apiKey, modelName } = settings.api
-        this.settings.api = {
-          modelType: modelType || 'chatgpt',
-          url: url || '',
-          apiKey: apiKey || '',
-          modelName: modelName || ''
-        }
-        console.log('设置已更新到组件:', this.settings)
-      }
-    } catch (error) {
-      console.error('加载设置失败:', error)
-    }
+    await this.loadSettings()
   }
 }
 </script>
