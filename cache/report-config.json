@@ -5,7 +5,7 @@
     "includeTasks": true,
     "includeStats": true,
     "aiDepth": "detailed",
-    "customPrompt": ""
+    "customPrompt": "帮我整理成日报"
   },
   "projects": [
     {

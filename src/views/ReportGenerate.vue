@@ -133,9 +133,19 @@
 
     <!-- 操作按钮 -->
     <div class="action-buttons">
-      <button class="preview-button" @click="previewReport">
-        <i class="preview-icon"></i>
-        预览报告
+      <button 
+        class="preview-button" 
+        @click="previewReport"
+        :disabled="isPreviewLoading"
+      >
+        <template v-if="!isPreviewLoading">
+          <i class="preview-icon"></i>
+          预览报告
+        </template>
+        <template v-else>
+          <i class="loading-icon"></i>
+          生成中...
+        </template>
       </button>
       <button class="generate-button" @click="generateReport">
         <i class="generate-icon"></i>
@@ -168,6 +178,7 @@ import { dataService } from "../services/dataService";
 import { EventBus } from "../eventBus";
 import { aiManager } from "../services/ai/AIServiceFactory";
 import ReportPreviewDialog from '../components/ReportPreviewDialog.vue';
+import { ElMessage } from 'element-plus';
 
 export default {
   name: "ReportGenerate",
@@ -199,6 +210,7 @@ export default {
       tasks: [],
       showPreview: false,
       previewContent: '',
+      isPreviewLoading: false,
     };
   },
   methods: {
@@ -214,7 +226,17 @@ export default {
       }
     },
     async previewReport() {
+      if (this.isPreviewLoading) return;
+      
+      this.isPreviewLoading = true;
+      this.progressStatus = "正在生成报告预览...";
+      this.isGenerating = true;
+      this.generationProgress = 0;
+
       try {
+        // 模拟进度
+        this.startPreviewProgress();
+        
         // 1. 获取任务列表数据
         const tasks = await this.getTaskListData();
         const taskText = tasks
@@ -243,8 +265,47 @@ export default {
         
       } catch (error) {
         console.error("预览报告失败:", error);
-        alert("预览报告失败: " + error.message);
+        
+        // 显示错误提示
+        ElMessage({
+          message: '生成预览失败，请检查 AI 配置是否正确',
+          type: 'error',
+          duration: 5000,
+          showClose: true,
+          onClick: () => {
+            // 点击错误消息时打开设置对话框
+            this.$emit('open-settings');
+          }
+        });
+      } finally {
+        this.isPreviewLoading = false;
+        this.isGenerating = false;
+        this.generationProgress = 0;
+        this.progressStatus = "";
       }
+    },
+
+    startPreviewProgress() {
+      const steps = [
+        { progress: 20, status: "收集项目数据..." },
+        { progress: 40, status: "分析代码提交..." },
+        { progress: 60, status: "生成报告内容..." },
+        { progress: 80, status: "等待 AI 响应..." },
+      ];
+
+      let currentStep = 0;
+      
+      const updateProgress = () => {
+        if (currentStep < steps.length && this.isPreviewLoading) {
+          const { progress, status } = steps[currentStep];
+          this.generationProgress = progress;
+          this.progressStatus = status;
+          currentStep++;
+          setTimeout(updateProgress, 800);
+        }
+      };
+
+      updateProgress();
     },
 
     async getTaskListData() {
@@ -973,5 +1034,65 @@ textarea:focus {
   display: flex;
   flex-direction: column;
   gap: 25px;
+}
+
+/* 添加加载图标动画 */
+.loading-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 禁用状态样式 */
+.preview-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.preview-button:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* 进度条动画 */
+.progress-fill {
+  transition: width 0.3s ease-in-out;
+}
+
+.generation-progress {
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-status {
+  text-align: center;
+  color: var(--text-light);
+  font-size: 0.9em;
+  min-height: 20px;
 }
 </style>
