@@ -1,8 +1,8 @@
 const { app, BrowserWindow, ipcMain, dialog, net, shell } = require('electron')
 const path = require('path')
 const fs = require('fs')
-const { initGitService } = require('./services/gitService')
-const { saveData, loadData } = require('./services/storageService')
+const { initGitService } = require(path.join(__dirname, 'services/gitService'))
+const { saveData, loadData } = require(path.join(__dirname, 'services/storageService'))
 const { exec } = require('child_process')
 
 let mainWindow
@@ -98,8 +98,23 @@ async function initSettings() {
   }
 }
 
+// 确保资源目录存在
+function ensureDirectories() {
+  const directories = [
+    path.join(app.getPath('userData'), 'cache'),
+    path.join(app.getPath('userData'), 'data')
+  ]
+  
+  directories.forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true })
+    }
+  })
+}
+
 // 在应用启动时初始化设置
 app.whenReady().then(async () => {
+  ensureDirectories()
   // 初始化设置
   const settings = await initSettings()
   

@@ -52,7 +52,18 @@
     "files": [
       "dist/**/*",
       "main.js",
-      "preload.js"
+      "preload.js",
+      "services/**/*",
+      "electron/**/*",
+      "src/**/*",
+      "!**/node_modules/*"
+    ],
+    "extraResources": [
+      {
+        "from": "logo/",
+        "to": "logo/",
+        "filter": ["**/*"]
+      }
     ],
     "mac": {
       "category": "public.app-category.productivity",
@@ -60,7 +71,9 @@
       "target": [
         "dmg",
         "zip"
-      ]
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
     },
     "win": {
       "icon": "logo/windows.ico",
