@@ -472,85 +472,57 @@ export default {
     },
     async saveReportConfig() {
       try {
-        const configToSave = {
-          config: { ...this.config },
-          projects: [...this.projects],
-          selectedTags: [...this.selectedTags],
-        };
-        await dataService.saveReportConfig(configToSave);
+        await dataService.saveReportConfig({
+          config: this.config,
+          projects: this.projects,
+          selectedTags: this.selectedTags
+        })
+        console.log('报告配置已保存')
       } catch (error) {
-        console.error("保存报告配置失败:", error);
+        console.error('保存报告配置失败:', error)
+        throw error
       }
     },
 
     async loadReportConfig() {
       try {
-        const config = await dataService.loadReportConfig();
+        const config = await dataService.loadReportConfig()
         if (config) {
-          this.config = {
-            reportType: config.config?.reportType || "weekly",
-            includeCommits: config.config?.includeCommits ?? true,
-            includeTasks: config.config?.includeTasks ?? true,
-            includeStats: config.config?.includeStats ?? true,
-            aiDepth: config.config?.aiDepth || "detailed",
-            customPrompt: config.config?.customPrompt || "",
-          };
-          this.projects = Array.isArray(config.projects) ? config.projects : [];
-          this.selectedTags = Array.isArray(config.selectedTags)
-            ? config.selectedTags
-            : [];
+          this.config = config.config || this.config
+          this.projects = config.projects || []
+          this.selectedTags = config.selectedTags || []
         }
+        console.log('报告配置已加载')
       } catch (error) {
-        console.error("加载报告配置失败:", error);
-        this.selectedTags = [];
+        console.error('加载报告配置失败:', error)
       }
-    },
+    }
   },
 
   async mounted() {
-    try {
-      const settings = await window.electronAPI.loadSettings();
-      if (settings?.dataDirectory) {
-        dataService.setDataDirectory(settings.dataDirectory);
-        await this.loadReportConfig();
-      }
-      if (settings?.api) {
-        aiManager.initializeService(settings);
-      } else {
-        console.warn("未找到 AI 服务配置");
-      }
-    } catch (error) {
-      console.error("初始化报告配置失败:", error);
-      this.selectedTags = [];
-    }
-    EventBus.on("taskListUpdated", (tasks) => {
-      this.tasks = tasks;
-    });
-  },
-
-  beforeUnmount() {
-    EventBus.off("taskListUpdated");
+    await this.loadReportConfig()
   },
 
   watch: {
     config: {
       deep: true,
       handler() {
-        this.saveReportConfig();
-      },
+        this.saveReportConfig()
+      }
     },
     projects: {
       deep: true,
       handler() {
-        this.saveReportConfig();
-      },
+        this.saveReportConfig()
+      }
     },
     selectedTags: {
+      deep: true,
       handler() {
-        this.saveReportConfig();
-      },
-    },
-  },
+        this.saveReportConfig()
+      }
+    }
+  }
 };
 </script>
 
