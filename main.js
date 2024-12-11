@@ -11,6 +11,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    icon: getAppIcon(),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -28,6 +29,20 @@ function createWindow() {
   // 开发时打开开发者工具
   if (process.env.NODE_ENV === 'development') {
     mainWindow.webContents.openDevTools()
+  }
+}
+
+// 根据平台返回对应的图标
+function getAppIcon() {
+  switch (process.platform) {
+    case 'win32':
+      return path.join(__dirname, 'logo/windows.ico')
+    case 'darwin':
+      return path.join(__dirname, 'logo/macos.icns')
+    case 'linux':
+      return path.join(__dirname, 'logo/linux.png')
+    default:
+      return path.join(__dirname, 'logo/windows.ico')
   }
 }
 

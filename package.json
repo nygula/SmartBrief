@@ -1,5 +1,5 @@
 {
-  "name": "ai-report-tool",
+  "name": "smart-brief",
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
@@ -7,7 +7,10 @@
     "dev:electron": "cross-env NODE_ENV=development electron .",
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
     "build:vite": "vite build",
-    "build": "npm run build:vite && electron-builder"
+    "build": "npm run build:vite && electron-builder",
+    "build:win": "npm run build:vite && electron-builder --win",
+    "build:mac": "npm run build:vite && electron-builder --mac",
+    "build:linux": "npm run build:vite && electron-builder --linux"
   },
   "keywords": [],
   "author": "",
@@ -16,7 +19,6 @@
   "dependencies": {
     "axios": "^1.7.9",
     "dompurify": "^3.2.3",
-    "electron": "^33.2.1",
     "electron-store": "^10.0.0",
     "element-plus": "^2.9.0",
     "lodash": "^4.17.21",
@@ -34,6 +36,7 @@
     "babel-loader": "^9.2.1",
     "concurrently": "^9.1.0",
     "cross-env": "^7.0.3",
+    "electron": "^33.2.1",
     "electron-builder": "^25.1.8",
     "vite": "^5.1.4",
     "webpack": "^5.97.1",
@@ -41,14 +44,48 @@
   },
   "build": {
     "appId": "com.aireport.app",
+    "productName": "SmartBrief",
+    "copyright": "Copyright © 2024",
+    "directories": {
+      "output": "release/${version}"
+    },
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "preload.js"
+    ],
     "mac": {
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "icon": "logo/macos.icns",
+      "target": [
+        "dmg",
+        "zip"
+      ]
     },
     "win": {
-      "target": "nsis"
+      "icon": "logo/windows.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
     },
     "linux": {
-      "target": "AppImage"
+      "icon": "logo/linux.png",
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     }
   }
 }

@@ -1,3 +1,6 @@
 # Git 忽略文件配置
 node_modules/
 dist/
+release/
+*.log
+.DS_Store
