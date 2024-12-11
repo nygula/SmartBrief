@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, net } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, net, shell } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const { initGitService } = require('./services/gitService')
@@ -272,6 +272,37 @@ app.whenReady().then(async () => {
       }
       request.end();
     });
+  });
+
+  ipcMain.handle('save-report', async (event, { content, fileName }) => {
+    try {
+      // 获取系统下载目录
+      const downloadsPath = app.getPath('downloads');
+      const filePath = path.join(downloadsPath, fileName);
+      
+      // 使用 Promise 包装 fs.writeFile
+      await new Promise((resolve, reject) => {
+        fs.writeFile(filePath, content, 'utf8', (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+      
+      return {
+        success: true,
+        filePath: filePath
+      };
+    } catch (error) {
+      console.error('保存报告失败:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  });
+
+  ipcMain.handle('show-item-in-folder', async (event, filePath) => {
+    shell.showItemInFolder(filePath);
   });
 })
 

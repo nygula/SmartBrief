@@ -11,5 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveData: (data) => ipcRenderer.invoke('save-data', data),
   loadData: (data) => ipcRenderer.invoke('load-data', data),
   executeCommand: (options) => ipcRenderer.invoke('execute-command', options),
-  makeAIRequest: (options) => ipcRenderer.invoke('make-ai-request', options)
+  makeAIRequest: (options) => ipcRenderer.invoke('make-ai-request', options),
+  saveReport: (options) => ipcRenderer.invoke('save-report', options),
+  showItemInFolder: (filePath) => ipcRenderer.invoke('show-item-in-folder', filePath)
 }) 

@@ -170,6 +170,11 @@
       v-model="showPreview"
       :content="previewContent"
     />
+
+    <SuccessDialog
+      v-model="showSuccessDialog"
+      :file-path="generatedFilePath"
+    />
   </div>
 </template>
 
@@ -178,12 +183,15 @@ import { dataService } from "../services/dataService";
 import { EventBus } from "../eventBus";
 import { aiManager } from "../services/ai/AIServiceFactory";
 import ReportPreviewDialog from '../components/ReportPreviewDialog.vue';
+import SuccessDialog from '../components/SuccessDialog.vue';
 import { ElMessage } from 'element-plus';
+import { formatDate } from '../utils/dateUtils';
 
 export default {
   name: "ReportGenerate",
   components: {
-    ReportPreviewDialog
+    ReportPreviewDialog,
+    SuccessDialog
   },
   data() {
     return {
@@ -211,6 +219,8 @@ export default {
       showPreview: false,
       previewContent: '',
       isPreviewLoading: false,
+      showSuccessDialog: false,
+      generatedFilePath: ''
     };
   },
   methods: {
@@ -225,6 +235,48 @@ export default {
         this.selectedTags.splice(index, 1);
       }
     },
+    async generateReportContent() {
+      const tasks = await this.getTaskListData();
+      const taskText = tasks
+        .map(
+          (task) =>
+            `任务: ${task.name}, 优先级: ${task.priority}, 进度: ${task.progress}%`
+        )
+        .join("\n");
+
+      const gitLogs = await this.getGitLogs();
+      const gitLogText = gitLogs.join("\n");
+
+      const aiConfigText = `分析深度: ${this.config.aiDepth}, 自定义提示词: ${this.config.customPrompt}`;
+
+      const prompt = `${taskText}\n\n${gitLogText}\n\n${aiConfigText}`;
+
+      return await aiManager.generateReport(prompt);
+    },
+
+    startGenerationProgress(progressCallback) {
+      const steps = [
+        { progress: 20, status: "收集项目数据..." },
+        { progress: 40, status: "分析代码提交..." },
+        { progress: 60, status: "生成报告内容..." },
+        { progress: 80, status: "等待 AI 响应..." },
+      ];
+
+      let currentStep = 0;
+      
+      const updateProgress = () => {
+        if (currentStep < steps.length && progressCallback.isLoading) {
+          const { progress, status } = steps[currentStep];
+          this.generationProgress = progress;
+          this.progressStatus = status;
+          currentStep++;
+          setTimeout(updateProgress, 800);
+        }
+      };
+
+      updateProgress();
+    },
+
     async previewReport() {
       if (this.isPreviewLoading) return;
       
@@ -234,46 +286,18 @@ export default {
       this.generationProgress = 0;
 
       try {
-        // 模拟进度
-        this.startPreviewProgress();
-        
-        // 1. 获取任务列表数据
-        const tasks = await this.getTaskListData();
-        const taskText = tasks
-          .map(
-            (task) =>
-              `任务: ${task.name}, 优先级: ${task.priority}, 进度: ${task.progress}%`
-          )
-          .join("\n");
-
-        // 2. 获取 Git 日志
-        const gitLogs = await this.getGitLogs();
-        const gitLogText = gitLogs.join("\n");
-
-        // 3. 获取 AI 分析配置数据
-        const aiConfigText = `分析深度: ${this.config.aiDepth}, 自定义提示词: ${this.config.customPrompt}`;
-
-        // 4. 构建完整的提示词
-        const prompt = `${taskText}\n\n${gitLogText}\n\n${aiConfigText}`;
-
-        // 5. 调用 AI 服务生成报告
-        const reportContent = await aiManager.generateReport(prompt);
-        
-        // 6. 显示预览内容
+        this.startGenerationProgress({ isLoading: this.isPreviewLoading });
+        const reportContent = await this.generateReportContent();
         this.previewContent = reportContent;
         this.showPreview = true;
-        
       } catch (error) {
         console.error("预览报告失败:", error);
-        
-        // 显示错误提示
         ElMessage({
           message: '生成预览失败，请检查 AI 配置是否正确',
           type: 'error',
           duration: 5000,
           showClose: true,
           onClick: () => {
-            // 点击错误消息时打开设置对话框
             this.$emit('open-settings');
           }
         });
@@ -285,27 +309,47 @@ export default {
       }
     },
 
-    startPreviewProgress() {
-      const steps = [
-        { progress: 20, status: "收集项目数据..." },
-        { progress: 40, status: "分析代码提交..." },
-        { progress: 60, status: "生成报告内容..." },
-        { progress: 80, status: "等待 AI 响应..." },
-      ];
-
-      let currentStep = 0;
+    async generateReport() {
+      if (this.isGenerating) return;
       
-      const updateProgress = () => {
-        if (currentStep < steps.length && this.isPreviewLoading) {
-          const { progress, status } = steps[currentStep];
-          this.generationProgress = progress;
-          this.progressStatus = status;
-          currentStep++;
-          setTimeout(updateProgress, 800);
-        }
-      };
+      this.isGenerating = true;
+      this.progressStatus = "正在生成报告文件...";
+      this.generationProgress = 0;
 
-      updateProgress();
+      try {
+        this.startGenerationProgress({ isLoading: this.isGenerating });
+        const reportContent = await this.generateReportContent();
+        
+        const timestamp = formatDate(new Date(), 'yyyy-MM-dd-HHmmss');
+        const fileName = `生成报告_${timestamp}.txt`;
+        
+        const result = await window.electronAPI.saveReport({
+          content: reportContent,
+          fileName: fileName
+        });
+        
+        if (result.success) {
+          this.generatedFilePath = result.filePath;
+          this.showSuccessDialog = true;
+        } else {
+          throw new Error(result.error || '保存文件失败');
+        }
+      } catch (error) {
+        console.error("生成报告失败:", error);
+        ElMessage({
+          message: '生成报告失败，请检查 AI 配置是否正确',
+          type: 'error',
+          duration: 5000,
+          showClose: true,
+          onClick: () => {
+            this.$emit('open-settings');
+          }
+        });
+      } finally {
+        this.isGenerating = false;
+        this.generationProgress = 0;
+        this.progressStatus = "";
+      }
     },
 
     async getTaskListData() {
@@ -324,7 +368,6 @@ export default {
 
     async runGitCommand(directory, startDate, endDate) {
       try {
-        // 添加日志输出
         console.log("开始获取Git提交数据:");
         console.log(`目录: ${directory}`);
         console.log(`开始日期: ${startDate}`);
@@ -356,7 +399,6 @@ export default {
           return `获取Git日志出现问题: ${result.error}`;
         }
 
-        // 打印获取到的Git日志
         console.log("获取到的Git日志:", result.output);
 
         if (!result.output.trim()) {
@@ -373,7 +415,6 @@ export default {
 
     async callAIService(taskText, gitLogText, aiConfigText) {
       try {
-        // 使用 AIManager 调用 API 服务
         const prompt = `${taskText}\n\n${gitLogText}\n\n${aiConfigText}`;
         return await aiManager.generateReport(prompt);
       } catch (error) {
@@ -381,32 +422,7 @@ export default {
         throw error;
       }
     },
-    async generateReport() {
-      this.isGenerating = true;
-      this.generationProgress = 0;
-      this.progressStatus = "正在收集数据...";
 
-      // 模拟生成过程
-      await this.simulateProgress();
-
-      this.isGenerating = false;
-      // 实际生成逻辑
-    },
-    async simulateProgress() {
-      const steps = [
-        { progress: 20, status: "分析代码提交..." },
-        { progress: 40, status: "处理任务数据..." },
-        { progress: 60, status: "生成统计图表..." },
-        { progress: 80, status: "AI 分析中..." },
-        { progress: 100, status: "报告生成完成！" },
-      ];
-
-      for (const step of steps) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        this.generationProgress = step.progress;
-        this.progressStatus = step.status;
-      }
-    },
     async openDirectoryDialog() {
       try {
         if (!window.electronAPI?.selectDirectory) {
@@ -449,9 +465,7 @@ export default {
       const parts = path.split(/[/\\]/);
       if (parts.length <= 3) return path;
 
-      // 保留开头的驱动器（如 C:）或根目录（如 /）
       let start = parts[0].includes(":") ? parts[0] + "\\" : "/";
-      // 保留最后两级目录
       let end = parts.slice(-2).join("/");
 
       return `${start}/.../${end}`;
@@ -500,7 +514,6 @@ export default {
         dataService.setDataDirectory(settings.dataDirectory);
         await this.loadReportConfig();
       }
-      // 初始化 AI 服务
       if (settings?.api) {
         aiManager.initializeService(settings);
       } else {
@@ -516,12 +529,10 @@ export default {
   },
 
   beforeUnmount() {
-    // 清理事件监听
     EventBus.off("taskListUpdated");
   },
 
   watch: {
-    // 监听配置变化自动保存
     config: {
       deep: true,
       handler() {
