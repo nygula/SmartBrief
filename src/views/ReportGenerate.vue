@@ -220,14 +220,19 @@ export default {
         // 3. 获取 AI 分析配置数据
         const aiConfigText = `分析深度: ${this.config.aiDepth}, 自定义提示词: ${this.config.customPrompt}`;
 
-        // 4. 调用 API 服务
+        // 4. 构建完整的提示词
         const prompt = `${taskText}\n\n${gitLogText}\n\n${aiConfigText}`;
-        const apiResponse = await aiManager.generateReport(prompt);
 
-        // 5. 展示 API 返回结果
-        alert(`AI 分析结果:\n${apiResponse}`);
+        // 5. 调用 AI 服务生成报告
+        const reportContent = await aiManager.generateReport(prompt);
+        
+        // 6. 处理生成的报告内容
+        console.log('生成的报告内容:', reportContent);
+        // TODO: 显示预览内容
+        
       } catch (error) {
         console.error("预览报告失败:", error);
+        // TODO: 显示错误提示
       }
     },
 
