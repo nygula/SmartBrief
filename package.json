@@ -12,7 +12,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "AI工作报告生成工具",
+  "description": "smartbrief",
   "dependencies": {
     "axios": "^1.7.9",
     "dompurify": "^3.2.3",
