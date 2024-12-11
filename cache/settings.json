@@ -5,5 +5,5 @@
     "apiKey": "e1b16eb4-3252-419a-85ba-f15997d39634",
     "modelName": "ep-20241104111839-8r5s6"
   },
-  "dataDirectory": "/Users/chenhaiming/WebstormProjects/ai-report-tool/cache"
+  "dataDirectory": "../SmartBrief/cache"
 }
