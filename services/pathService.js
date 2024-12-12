@@ -4,17 +4,18 @@ const fs = require('fs')
 
 class PathService {
   constructor() {
-    // 使用 Electron 标准用户数据目录作为基础目录
+    // 使用 userData 作为基础目录
     this.baseDir = app.getPath('userData')
-    // 所有文件统一存放在 cache 目录下
+    // 设置文件直接放在 userData 目录下
+    this.settingsPath = path.join(this.baseDir, 'settings.json')
+    // 其他数据放在 cache 目录下
     this.cacheDir = path.join(this.baseDir, 'cache')
-    // 设置文件也放在 cache 目录下
-    this.settingsPath = path.join(this.cacheDir, 'settings.json')
-
-    // 打印初始化的路径信息
-    console.log('应用基础目录:', this.baseDir)
-    console.log('缓存目录:', this.cacheDir)
-    console.log('设置文件路径:', this.settingsPath)
+    
+    console.log('PathService 初始化:', {
+      baseDir: this.baseDir,
+      settingsPath: this.settingsPath,
+      cacheDir: this.cacheDir
+    })
   }
 
   // 获取缓存文件完整路径
