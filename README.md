@@ -40,7 +40,7 @@ SmartBrief 是一款基于 AI 的智能工作报告生成工具，可以自动�
    - 导入或填写任务数据信息
 
 <div align="center">
-  <img src="image-2.png" width="800" style="border-radius: 10px; margin: 20px 0" />
+  <img src="image.png" width="800" style="border-radius: 10px; margin: 20px 0" />
 </div>
 
 2️⃣ **配置模板**
@@ -61,7 +61,7 @@ SmartBrief 是一款基于 AI 的智能工作报告生成工具，可以自动�
    -  实时预览
 
 <div align="center">
-  <img src="image-3.png" width="800" style="border-radius: 10px; margin: 20px 0" />
+  <img src="image-2.png" width="800" style="border-radius: 10px; margin: 20px 0" />
 </div>
 
 ## 🛠️ 技术栈
