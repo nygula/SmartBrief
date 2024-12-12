@@ -116,6 +116,5 @@ MIT License © 2024 [Estelle925](https://github.com/Estelle925)
   
   **用 ❤️ 打造**
   
-  [官网](https://smartbrief.com) · [文档](https://docs.smartbrief.com) · [反馈](https://github.com/yourusername/smartbrief/issues)
 
 </div>
