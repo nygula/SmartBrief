@@ -109,7 +109,7 @@ SmartBrief 是一款基于 AI 的智能工作报告生成工具，可以自动�
 
 <div align="center">
 
-MIT License © 2024 [Your Name](https://github.com/yourusername)
+MIT License © 2024 [Estelle925](https://github.com/Estelle925)
 
 <img src="image-1.png" width="50" />
 
