@@ -1,6 +1,27 @@
 # Git 忽略文件配置
 node_modules/
 dist/
-release/
-*.log
 .DS_Store
+*.log
+
+# 只忽略release目录下的中间文件和临时文件
+release/**/
+!release/*.exe
+!release/*.dmg
+!release/*.deb
+!release/*.rpm
+!release/*.AppImage
+!release/*.zip
+!release/*/*.exe
+!release/*/*.dmg
+!release/*/*.deb
+!release/*/*.rpm
+!release/*/*.AppImage
+!release/*/*.zip
+
+# 忽略特定的构建目录
+release/**/win-unpacked/
+release/**/mac-unpacked/
+release/**/linux-unpacked/
+release/**/*.blockmap
+release/**/*.yml
