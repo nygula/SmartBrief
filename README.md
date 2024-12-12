@@ -29,12 +29,22 @@ SmartBrief 是一款基于 AI 的智能工作报告生成工具，可以自动�
 
 ## 📦 安装使用
 
-### 环境要求
+## 🌟 下载安装
 
-- Node.js >= 14
-- Git
+### Windows 系统
+1. 下载 `SmartBrief-Setup-win.exe`
+2. 双击安装包进行安装
+3. 根据安装向导完成安装
 
-### 安装步骤
+### macOS 系统
+1. 下载 `SmartBrief-mac.dmg`
+2. 打开 dmg 文件
+3. 将应用拖入 Applications 文件夹
+
+### Linux 系统
+#### DEB包安装(Ubuntu/Debian)
+
+### 使用步骤
 
 1️⃣ **导入任务数据**
    - 导入或填写任务数据信息
