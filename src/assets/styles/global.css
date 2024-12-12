@@ -1,0 +1,210 @@
+:root {
+  --primary-gradient: linear-gradient(135deg, #646cff 0%, #a855f7 100%) !important;
+  --primary-color: #646cff;
+  --secondary-color: #a855f7;
+  --bg-dark: #222;
+  --text-light: #e0e0e0;
+  --text-secondary: #999;
+  --border-color: #333;
+  --input-bg: #2a2a2a;
+
+  /* 字体大小 */
+  --font-size-base: 0.875rem;      /* 14px */
+  --font-size-sm: 0.75rem;         /* 12px */
+  --font-size-xs: 0.688rem;        /* 11px */
+  --font-size-lg: 1rem;            /* 16px */
+  --font-size-xl: 1rem;            /* 16px */
+
+  /* 间距 */
+  --spacing-xs: 6px !important;
+  --spacing-sm: 10px !important;
+  --spacing-md: 14px !important;
+  --spacing-lg: 20px;
+  --spacing-xl: 28px;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-dark);
+  color: var(--text-light);
+  font-size: var(--font-size-base);
+}
+
+/* 全局容器样式调整 */
+body .report-container .section-title {
+  margin-bottom: 5px;
+}
+
+body .report-container .info-section,
+body .report-container .task-section,
+body .report-container .ai-section {
+  padding: var(--spacing-md);
+  margin: 5px 0;
+}
+
+body .report-container .project-info-item,
+body .report-container .task-info-item {
+  padding: var(--spacing-xs) var(--spacing-sm) !important;
+  margin-bottom: var(--spacing-xs) !important;
+}
+
+body .report-container .section-title h2,
+body .project-config-container .section-title h2 {
+  font-size: calc(var(--font-size-lg) * 0.8) !important;
+  font-weight: 500 !important;
+}
+
+/* 输入框和标签样式 */
+input, select, textarea {
+  padding: var(--spacing-xs) !important;
+  font-size: var(--font-size-sm) !important;
+}
+
+label {
+  font-size: var(--font-size-sm) !important;
+}
+
+/* 卡片和列表项样式 */
+.project-item,
+.task-item,
+.project-info-item,
+.task-info-item {
+  padding: var(--spacing-sm) !important;
+  margin-bottom: var(--spacing-xs) !important;
+}
+
+/* 按钮样式 */
+button {
+  padding: var(--spacing-xs) var(--spacing-md) !important;
+  font-size: var(--font-size-sm) !important;
+}
+
+/* 容器内边距 */
+.report-container,
+.task-list-container,
+.project-config-container {
+  padding: var(--spacing-md) !important;
+}
+
+.info-section,
+.task-section,
+.ai-section,
+.config-section {
+  padding: var(--spacing-lg) !important;
+  margin: var(--spacing-lg) 0 !important;
+}
+
+/* 文本大小 */
+.project-path,
+.task-name {
+  font-size: var(--font-size-base) !important;
+}
+
+.project-period,
+.task-details,
+.tag {
+  font-size: var(--font-size-sm) !important;
+}
+
+/* 间距调整 */
+.input-group {
+  gap: var(--spacing-xs) !important;
+}
+
+.tag-selector {
+  gap: var(--spacing-xs) !important;
+}
+
+.projects-list,
+.tasks-list {
+  gap: var(--spacing-sm) !important;
+}
+
+/* 生成报告页面特殊样式 */
+.report-container .section-title {
+  margin-bottom: var(--spacing-xs) !important;
+}
+
+.report-container .info-section,
+.report-container .task-section,
+.report-container .ai-section {
+  padding: var(--spacing-md) !important;
+  margin: 5px 0 !important;
+}
+
+.report-container .project-info-item,
+.report-container .task-info-item {
+  padding: var(--spacing-xs) var(--spacing-sm) !important;
+  margin-bottom: var(--spacing-xs) !important;
+}
+
+.report-container .project-path,
+.report-container .task-name {
+  font-size: var(--font-size-sm) !important;
+  margin-bottom: var(--spacing-xs) !important;
+}
+
+.report-container .project-period,
+.report-container .task-details {
+  font-size: var(--font-size-xs) !important;
+}
+
+.report-container .input-group {
+  gap: var(--spacing-xs) !important;
+  margin-bottom: var(--spacing-xs) !important;
+}
+
+.report-container .tag {
+  padding: var(--spacing-xs) var(--spacing-sm) !important;
+  font-size: var(--font-size-xs) !important;
+}
+
+.report-container .tag-selector {
+  gap: var(--spacing-xs) !important;
+  margin-top: var(--spacing-xs) !important;
+}
+
+.report-container .action-buttons {
+  margin-top: var(--spacing-md) !important;
+}
+
+.report-container .type-item {
+  padding: var(--spacing-xs) var(--spacing-md) !important;
+  font-size: var(--font-size-sm) !important;
+}
+
+/* 项目配置和生成报告页面的小标题样式 */
+.report-container .section-title h2,
+.project-config-container .section-title h2 {
+  font-size: calc(var(--font-size-lg) * 0.8) !important;
+  font-weight: 500 !important;
+}
+
+/* 图标大小也相应调整 */
+.report-container .section-title i,
+.project-config-container .section-title i {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* 调整标题区域的间距 */
+.report-container .section-title,
+.project-config-container .section-title {
+  gap: var(--spacing-xs) !important;
+  margin-bottom: var(--spacing-xs) !important;
+}
+
+/* 调整报告类型区域的间距 */
+.report-container .report-type-section {
+  margin-bottom: 5px !important;
+}
+
+/* 调整 AI 分析配置区域的间距 */
+.report-container .ai-section {
+  margin-top: 5px !important;
+}
+
+/* 调整操作按钮区域的间距 */
+.report-container .action-buttons {
+  margin-top: 5px !important;
+}
