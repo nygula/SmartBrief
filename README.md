@@ -1,4 +1,4 @@
-# SmartBrief - AI 智能工作报告生成器
+
 
 <div align="center">
   <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin: 20px 0">
@@ -15,7 +15,7 @@
 </div>
 
 ## 🌟 项目介绍
-
+# SmartBrief - AI 智能工作报告生成器
 SmartBrief 是一款基于 AI 的智能工作报告生成工具，可以自动分析项目代码提交记录和任务数据，快速生成日报、周报和月报。
 
 ### ✨ 主要特性
