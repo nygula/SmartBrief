@@ -133,8 +133,8 @@
 
     <!-- 操作按钮 -->
     <div class="action-buttons">
-      <button 
-        class="preview-button" 
+      <button
+        class="preview-button"
         @click="previewReport"
         :disabled="isPreviewLoading"
       >
@@ -166,15 +166,9 @@
       </div>
     </div>
 
-    <ReportPreviewDialog
-      v-model="showPreview"
-      :content="previewContent"
-    />
+    <ReportPreviewDialog v-model="showPreview" :content="previewContent" />
 
-    <SuccessDialog
-      v-model="showSuccessDialog"
-      :file-path="generatedFilePath"
-    />
+    <SuccessDialog v-model="showSuccessDialog" :file-path="generatedFilePath" />
   </div>
 </template>
 
@@ -182,16 +176,16 @@
 import { dataService } from "../services/dataService";
 import { EventBus } from "../eventBus";
 import { aiManager } from "../services/ai/AIServiceFactory";
-import ReportPreviewDialog from '../components/ReportPreviewDialog.vue';
-import SuccessDialog from '../components/SuccessDialog.vue';
-import { ElMessageBox } from 'element-plus';
-import { formatDate } from '../utils/dateUtils';
+import ReportPreviewDialog from "../components/ReportPreviewDialog.vue";
+import SuccessDialog from "../components/SuccessDialog.vue";
+import { ElMessageBox } from "element-plus";
+import { formatDate } from "../utils/dateUtils";
 
 export default {
   name: "ReportGenerate",
   components: {
     ReportPreviewDialog,
-    SuccessDialog
+    SuccessDialog,
   },
   data() {
     return {
@@ -217,10 +211,10 @@ export default {
       progressStatus: "",
       tasks: [],
       showPreview: false,
-      previewContent: '',
+      previewContent: "",
       isPreviewLoading: false,
       showSuccessDialog: false,
-      generatedFilePath: ''
+      generatedFilePath: "",
     };
   },
   methods: {
@@ -247,11 +241,50 @@ export default {
       const gitLogs = await this.getGitLogs();
       const gitLogText = gitLogs.join("\n");
 
-      const aiConfigText = `分析深度: ${this.config.aiDepth}, 自定义提示词: ${this.config.customPrompt}`;
+      const reportTypePrompts = {
+        daily: "请将以下内容整理成一份工作日报，突出今日完成的工作内容和进展：",
+        weekly:
+          "请将以下内容整理成一份工作周报，总结本周的主要工作成果和进展：",
+        monthly:
+          "请将以下内容整理成一份工作月报，系统总结本月的工作重点和成果：",
+        custom: "请将以下内容整理成工作报告：",
+      };
 
-      const prompt = `${taskText}\n\n${gitLogText}\n\n${aiConfigText}`;
+      const reportTypePrompt =
+        reportTypePrompts[this.config.reportType] || reportTypePrompts.custom;
+
+      const aiConfigText = `
+          分析深度: ${this.config.aiDepth}
+          ${this.config.customPrompt ? `自定义提示词: ${this.config.customPrompt}` : ""}
+          ${
+            this.selectedTags.length > 0
+              ? `关注点: ${this.getSelectedTagNames().join(", ")}`
+              : ""
+          }
+                `.trim();
+
+         const prompt = `
+          ${reportTypePrompt}
+
+          === 任务进展 ===
+          ${taskText}
+
+          === 代码提交记录 ===
+          ${gitLogText}
+
+          === 分析要求 ===
+          ${aiConfigText}
+      `.trim();
 
       return await aiManager.generateReport(prompt);
+    },
+
+    getSelectedTagNames() {
+      return this.selectedTags
+        .map(
+          (tagId) => this.availableTags.find((tag) => tag.id === tagId)?.name
+        )
+        .filter(Boolean);
     },
 
     startGenerationProgress(progressCallback) {
@@ -263,7 +296,7 @@ export default {
       ];
 
       let currentStep = 0;
-      
+
       const updateProgress = () => {
         if (currentStep < steps.length && progressCallback.isLoading) {
           const { progress, status } = steps[currentStep];
@@ -281,18 +314,18 @@ export default {
       try {
         const settings = await window.electronAPI.loadSettings();
         if (!settings || !settings.api) {
-          throw new Error('未找到 AI 配置');
+          throw new Error("未找到 AI 配置");
         }
         aiManager.initializeService(settings);
       } catch (error) {
-        console.error('初始化 AI 服务失败:', error);
+        console.error("初始化 AI 服务失败:", error);
         throw error;
       }
     },
 
     async previewReport() {
       if (this.isPreviewLoading) return;
-      
+
       this.isPreviewLoading = true;
       this.progressStatus = "正在生成报告预览...";
       this.isGenerating = true;
@@ -300,15 +333,15 @@ export default {
 
       try {
         await this.initAIService();
-        
+
         this.startGenerationProgress({ isLoading: this.isPreviewLoading });
         const reportContent = await this.generateReportContent();
         this.previewContent = reportContent;
         this.showPreview = true;
       } catch (error) {
         console.error("预览报告失败:", error);
-        if (confirm('AI 配置有误，是否前往设置？')) {
-          this.$emit('open-settings');
+        if (confirm("AI 配置有误，是否前往设置？")) {
+          this.$emit("open-settings");
         }
       } finally {
         this.isPreviewLoading = false;
@@ -320,7 +353,7 @@ export default {
 
     async generateReport() {
       if (this.isGenerating) return;
-      
+
       this.isGenerating = true;
       this.progressStatus = "正在生成报告文件...";
       this.generationProgress = 0;
@@ -328,25 +361,25 @@ export default {
       try {
         this.startGenerationProgress({ isLoading: this.isGenerating });
         const reportContent = await this.generateReportContent();
-        
-        const timestamp = formatDate(new Date(), 'yyyy-MM-dd-HHmmss');
+
+        const timestamp = formatDate(new Date(), "yyyy-MM-dd-HHmmss");
         const fileName = `生成报告_${timestamp}.txt`;
-        
+
         const result = await window.electronAPI.saveReport({
           content: reportContent,
-          fileName: fileName
+          fileName: fileName,
         });
-        
+
         if (result.success) {
           this.generatedFilePath = result.filePath;
           this.showSuccessDialog = true;
         } else {
-          throw new Error(result.error || '保存文件失败');
+          throw new Error(result.error || "保存文件失败");
         }
       } catch (error) {
         console.error("生成报告失败:", error);
-        if (confirm('AI 配置有误，是否前往设置？')) {
-          this.$emit('open-settings');
+        if (confirm("AI 配置有误，是否前往设置？")) {
+          this.$emit("open-settings");
         }
       } finally {
         this.isGenerating = false;
@@ -478,36 +511,36 @@ export default {
         await dataService.saveReportConfig({
           config: this.config,
           projects: this.projects,
-          selectedTags: this.selectedTags
-        })
-        console.log('报告配置保存')
+          selectedTags: this.selectedTags,
+        });
+        console.log("报告配置保存");
       } catch (error) {
-        console.error('保存报告配置失败:', error)
-        throw error
+        console.error("保存报告配置失败:", error);
+        throw error;
       }
     },
 
     async loadReportConfig() {
       try {
-        const config = await dataService.loadReportConfig()
+        const config = await dataService.loadReportConfig();
         if (config) {
-          this.config = config.config || this.config
-          this.projects = config.projects || []
-          this.selectedTags = config.selectedTags || []
+          this.config = config.config || this.config;
+          this.projects = config.projects || [];
+          this.selectedTags = config.selectedTags || [];
         }
-        console.log('报告配置已加载')
+        console.log("报告配置已加载");
       } catch (error) {
-        console.error('加载报告配置失败:', error)
+        console.error("加载报告配置失败:", error);
       }
-    }
+    },
   },
 
   async mounted() {
-    await this.loadReportConfig()
+    await this.loadReportConfig();
     try {
       await this.initAIService();
     } catch (error) {
-      console.warn('初始化 AI 服务失败，将在使用时重试:', error);
+      console.warn("初始化 AI 服务失败，将在使用时重试:", error);
     }
   },
 
@@ -515,22 +548,22 @@ export default {
     config: {
       deep: true,
       handler() {
-        this.saveReportConfig()
-      }
+        this.saveReportConfig();
+      },
     },
     projects: {
       deep: true,
       handler() {
-        this.saveReportConfig()
-      }
+        this.saveReportConfig();
+      },
     },
     selectedTags: {
       deep: true,
       handler() {
-        this.saveReportConfig()
-      }
-    }
-  }
+        this.saveReportConfig();
+      },
+    },
+  },
 };
 </script>
 
