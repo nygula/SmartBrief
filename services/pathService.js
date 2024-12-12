@@ -1,5 +1,6 @@
 const { app } = require('electron')
 const path = require('path')
+const fs = require('fs')
 
 class PathService {
   constructor() {
@@ -23,7 +24,7 @@ class PathService {
     return filePath
   }
 
-  // 获取数据文件完整路径 (现在也统一存放在 cache 目录)
+  // 获取数据文件完整路径
   getDataPath(fileName) {
     const filePath = path.join(this.cacheDir, fileName)
     console.log('获取数据文件路径:', filePath)
@@ -38,6 +39,37 @@ class PathService {
     }
     console.log('获取应用目录列表:', dirs)
     return dirs
+  }
+
+  // 保存设置
+  async saveSettings(settings) {
+    try {
+      console.log('保存设置到文件:', this.settingsPath)
+      await fs.promises.writeFile(
+        this.settingsPath,
+        JSON.stringify(settings, null, 2)
+      )
+      console.log('设置保存成功')
+      return true
+    } catch (error) {
+      console.error('保存设置失败:', error)
+      return false
+    }
+  }
+
+  // 加载设置
+  async loadSettings() {
+    try {
+      console.log('从文件加载设置:', this.settingsPath)
+      if (!fs.existsSync(this.settingsPath)) {
+        return null
+      }
+      const data = await fs.promises.readFile(this.settingsPath, 'utf8')
+      return JSON.parse(data)
+    } catch (error) {
+      console.error('加载设置失败:', error)
+      return null
+    }
   }
 }
 

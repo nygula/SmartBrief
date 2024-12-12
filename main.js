@@ -218,15 +218,54 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('load-settings', async () => {
     try {
-      console.log('从路径加载设置:', pathService.settingsPath)
-      const data = await fs.promises.readFile(pathService.settingsPath, 'utf8')
-      return JSON.parse(data)
-    } catch (err) {
-      if (err.code === 'ENOENT') {
-        console.log('设置文件不存在:', pathService.settingsPath)
-        return null
+      console.log('开始加载设置文件')
+      const dirs = ensureDirectories()
+      console.log('确保目录存在后的状态:', {
+        settingsPath: pathService.settingsPath,
+        exists: fs.existsSync(pathService.settingsPath)
+      })
+      
+      // 如果设置文件不存在，创建默认设置
+      if (!fs.existsSync(pathService.settingsPath)) {
+        console.log('设置文件不存在，创建默认设置')
+        const defaultSettings = {
+          dataDirectory: dirs.cache,
+          api: {
+            modelType: 'chatgpt',
+            url: '',
+            apiKey: '',
+            modelName: ''
+          }
+        }
+        
+        // 使用同步写入确保文件立即创建
+        fs.writeFileSync(
+          pathService.settingsPath,
+          JSON.stringify(defaultSettings, null, 2)
+        )
+        console.log('默认设置已创建')
+        return defaultSettings
       }
-      throw err
+      
+      // 使用同步读取避免文件读取时的竞态条件
+      console.log('读取现有设置文件')
+      const data = fs.readFileSync(pathService.settingsPath, 'utf8')
+      const settings = JSON.parse(data)
+      console.log('成功读取设置:', settings)
+      return settings
+      
+    } catch (err) {
+      console.error('加载设置时发生错误:', err)
+      // 发生错误时，不要删除现有文件，而是返回默认设置
+      return {
+        dataDirectory: pathService.getDirectories().cache,
+        api: {
+          modelType: 'chatgpt',
+          url: '',
+          apiKey: '',
+          modelName: ''
+        }
+      }
     }
   })
 

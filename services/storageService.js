@@ -4,13 +4,34 @@ const pathService = require('./pathService')
 // 确保目录存在
 function ensureDirectories() {
   const dirs = pathService.getDirectories()
-  // 只需要确保 cache 目录存在
+  
+  // 检查并记录 cache 目录状态
+  console.log('检查缓存目录状态:', {
+    cachePath: dirs.cache,
+    exists: fs.existsSync(dirs.cache)
+  })
+
+  // 检查并记录 settings.json 状态
+  console.log('检查设置文件状态:', {
+    settingsPath: pathService.settingsPath,
+    exists: fs.existsSync(pathService.settingsPath)
+  })
+
+  // 只在目录不存在时创建
   if (!fs.existsSync(dirs.cache)) {
     console.log('创建缓存目录:', dirs.cache)
     fs.mkdirSync(dirs.cache, { recursive: true })
   } else {
     console.log('缓存目录已存在:', dirs.cache)
   }
+
+  // 再次确认目录和文件状态
+  console.log('目录创建后状态:', {
+    cacheExists: fs.existsSync(dirs.cache),
+    settingsExists: fs.existsSync(pathService.settingsPath)
+  })
+
+  return dirs
 }
 
 async function saveData(key, data) {
