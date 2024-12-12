@@ -880,8 +880,13 @@ textarea:focus {
 }
 
 .report-type-selector {
-  margin-bottom: 20px;
-  max-width: 200px;
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+  padding: 5px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
 }
 
 .projects-config {
@@ -1198,13 +1203,54 @@ textarea:focus {
   border: 1px solid var(--border-color);
 }
 
+.projects-info,
+.tasks-info {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* 自定义滚动条样式 */
+.projects-info::-webkit-scrollbar,
+.tasks-info::-webkit-scrollbar {
+  width: 8px;
+}
+
+.projects-info::-webkit-scrollbar-track,
+.tasks-info::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.projects-info::-webkit-scrollbar-thumb,
+.tasks-info::-webkit-scrollbar-thumb {
+  background: var(--primary-gradient);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.projects-info::-webkit-scrollbar-thumb:hover,
+.tasks-info::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #a855f7, #646cff);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
 .project-info-item,
 .task-info-item {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   padding: 15px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.project-info-item:hover,
+.task-info-item:hover {
+  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .project-path {
@@ -1258,30 +1304,47 @@ textarea:focus {
   display: flex;
   gap: 20px;
   margin-top: 20px;
+  padding: 5px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
 }
 
 .type-item {
   flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  padding: 15px 20px;
+  padding: 12px 24px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-size: 0.95em;
+  font-weight: 500;
 }
 
 .type-item:hover {
   background: rgba(100, 108, 255, 0.1);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
 }
 
 .type-item.active {
   background: var(--primary-gradient);
   border: none;
   color: white;
+  box-shadow: 0 2px 12px rgba(100, 108, 255, 0.3);
+}
+
+.type-item i {
+  opacity: 0.8;
+}
+
+.type-item.active i {
+  opacity: 1;
 }
 
 .type-icon,
