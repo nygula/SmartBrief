@@ -92,7 +92,16 @@ class DoubaoService extends BaseAIService {
     };
 
     const result = await this.makeRequest(this.url, data);
-    return result.choices[0].message.content;
+    try {
+      // 豆包 API 返回格式：{ choices: [{ message: { content: "..." } }] }
+      if (result.choices?.[0]?.message?.content) {
+        return result.choices[0].message.content;
+      }
+      throw new Error('豆包 API 返回格式异常');
+    } catch (error) {
+      console.error('解析豆包响应失败:', error);
+      throw error;
+    }
   }
 }
 
@@ -106,11 +115,32 @@ class ChatGPTService extends BaseAIService {
           role: "user",
           content: prompt
         }
-      ]
+      ],
+      temperature: 0.7
     };
 
-    const result = await this.makeRequest(this.url, data);
-    return result.choices[0].message.content;
+    try {
+      const result = await this.makeRequest(this.url, data);
+      // OpenAI API 返回格式：
+      // {
+      //   "id": "chatcmpl-12345",
+      //   "object": "chat.completion",
+      //   "created": 1677652288,
+      //   "choices": [{
+      //     "index": 0,
+      //     "message": { "role": "assistant", "content": "..." },
+      //     "finish_reason": "stop"
+      //   }],
+      //   "usage": { "prompt_tokens": 9, "completion_tokens": 14, "total_tokens": 23 }
+      // }
+      if (result.choices?.[0]?.message?.content) {
+        return result.choices[0].message.content;
+      }
+      throw new Error('OpenAI API 返回格式异常');
+    } catch (error) {
+      console.error('解析 OpenAI 响应失败:', error);
+      throw error;
+    }
   }
 }
 
@@ -118,43 +148,80 @@ class ChatGPTService extends BaseAIService {
 class QianwenService extends BaseAIService {
   getHeaders() {
     return {
-      'Content-Type': 'application/json',
-      'Authorization': this.apiKey
+      'Authorization': `Bearer ${this.apiKey}`,
+      'Content-Type': 'application/json'
     };
   }
 
   async generateCompletion(prompt) {
     const data = {
       model: this.modelName,
-      input: {
-        messages: [
-          {
-            role: "user",
-            content: prompt
-          }
-        ]
-      }
-    };
-
-    const result = await this.makeRequest(this.url, data);
-    return result.output.text;
-  }
-}
-
-// 文心一言服务实现
-class WenxinService extends BaseAIService {
-  async generateCompletion(prompt) {
-    const data = {
       messages: [
         {
           role: "user",
           content: prompt
         }
-      ]
+      ],
+      temperature: 0.7
     };
 
-    const result = await this.makeRequest(`${this.url}/chat/${this.modelName}`, data);
-    return result.result;
+    try {
+      const result = await this.makeRequest(this.url, data);
+      // 通义千问 API 返回格式：
+      // {
+      //   "id": "chatcmpl-67890",
+      //   "object": "chat.completion",
+      //   "created": 1677652288,
+      //   "choices": [{
+      //     "index": 0,
+      //     "message": { "role": "assistant", "content": "..." },
+      //     "finish_reason": "stop"
+      //   }],
+      //   "usage": { "prompt_tokens": 9, "completion_tokens": 14, "total_tokens": 23 }
+      // }
+      if (result.choices?.[0]?.message?.content) {
+        return result.choices[0].message.content;
+      }
+      throw new Error('通义千问 API 返回格式异常');
+    } catch (error) {
+      console.error('解析通义千问响应失败:', error);
+      throw error;
+    }
+  }
+}
+
+// 文心一言服务实现
+class WenxinService extends BaseAIService {
+  getHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      'apikey': this.apiKey
+    };
+  }
+
+  async generateCompletion(prompt) {
+    const data = {
+      text: prompt,
+      top_p: 0.8,
+      temperature: 0.7
+    };
+
+    try {
+      const result = await this.makeRequest(this.url, data);
+      // 文心一言 API 返回格式：
+      // {
+      //   "result": "您好！今天的天气晴朗，温度适中，适合进行户外活动。",
+      //   "log_id": "1234567890",
+      //   "usage": { "prompt_tokens": 9, "completion_tokens": 14, "total_tokens": 23 }
+      // }
+      if (result?.result) {
+        return result.result;
+      }
+      throw new Error('文心一言 API 返回格式异常');
+    } catch (error) {
+      console.error('解析文心一言响应失败:', error);
+      throw error;
+    }
   }
 }
 
