@@ -13,7 +13,10 @@
     "build:linux": "npm run build:vite && electron-builder --linux"
   },
   "keywords": [],
-  "author": "",
+  "author": {
+    "name": "SmartBrief Team",
+    "email": "jxtc163@163.com"
+  },
   "license": "ISC",
   "description": "smartbrief",
   "dependencies": {
@@ -69,8 +72,14 @@
       "category": "public.app-category.productivity",
       "icon": "logo/macos.icns",
       "target": [
-        "dmg",
-        "zip"
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64", "universal"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64", "universal"]
+        }
       ],
       "hardenedRuntime": true,
       "gatekeeperAssess": false
@@ -80,19 +89,32 @@
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64", "ia32", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "ia32", "arm64"]
         }
       ]
     },
     "linux": {
       "icon": "logo/linux.png",
       "target": [
-        "AppImage",
-        "deb"
+        {
+          "target": "AppImage",
+          "arch": ["x64", "arm64", "armv7l"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64", "arm64", "armv7l"]
+        },
+        {
+          "target": "rpm",
+          "arch": ["x64", "arm64", "armv7l"]
+        }
       ],
-      "category": "Office"
+      "category": "Office",
+      "maintainer": "SmartBrief Team <jxtc163@163.com>"
     },
     "nsis": {
       "oneClick": false,
