@@ -586,6 +586,7 @@ export default {
   margin: 0;
   font-size: 1.5em;
   background: var(--primary-gradient);
+  background-clip: text; 
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
