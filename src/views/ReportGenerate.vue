@@ -277,6 +277,19 @@ export default {
       updateProgress();
     },
 
+    async initAIService() {
+      try {
+        const settings = await window.electronAPI.loadSettings();
+        if (!settings || !settings.api) {
+          throw new Error('未找到 AI 配置');
+        }
+        aiManager.initializeService(settings);
+      } catch (error) {
+        console.error('初始化 AI 服务失败:', error);
+        throw error;
+      }
+    },
+
     async previewReport() {
       if (this.isPreviewLoading) return;
       
@@ -286,6 +299,8 @@ export default {
       this.generationProgress = 0;
 
       try {
+        await this.initAIService();
+        
         this.startGenerationProgress({ isLoading: this.isPreviewLoading });
         const reportContent = await this.generateReportContent();
         this.previewContent = reportContent;
@@ -293,7 +308,7 @@ export default {
       } catch (error) {
         console.error("预览报告失败:", error);
         ElMessage({
-          message: '生成预览失败，请检查 AI 配置是否正确',
+          message: error.message || '生成预览失败，请检查 AI 配置是否正确',
           type: 'error',
           duration: 5000,
           showClose: true,
@@ -501,6 +516,11 @@ export default {
 
   async mounted() {
     await this.loadReportConfig()
+    try {
+      await this.initAIService();
+    } catch (error) {
+      console.warn('初始化 AI 服务失败，将在使用时重试:', error);
+    }
   },
 
   watch: {
