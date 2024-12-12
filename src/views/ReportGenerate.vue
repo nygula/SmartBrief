@@ -1,11 +1,7 @@
 <template>
   <div class="report-container">
-    <!-- 报告类型选择 -->
-    <div class="report-type-section">
-      <div class="section-title">
-        <i class="type-icon"></i>
-        <h2>报告类型</h2>
-      </div>
+    <div class="report-header">
+      <!-- 报告类型选择 -->
       <div class="report-type-selector">
         <div 
           v-for="type in reportTypes" 
@@ -16,6 +12,28 @@
           <i :class="type.icon"></i>
           <span>{{ type.label }}</span>
         </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="action-buttons">
+        <button
+          class="preview-button"
+          @click="previewReport"
+          :disabled="isPreviewLoading"
+        >
+          <template v-if="!isPreviewLoading">
+            <i class="preview-icon"></i>
+            预览报告
+          </template>
+          <template v-else>
+            <i class="loading-icon"></i>
+            生成中...
+          </template>
+        </button>
+        <button class="generate-button" @click="generateReport">
+          <i class="generate-icon"></i>
+          生成报告
+        </button>
       </div>
     </div>
 
@@ -92,28 +110,6 @@
           ></textarea>
         </div>
       </div>
-    </div>
-
-    <!-- 操作按钮 -->
-    <div class="action-buttons">
-      <button
-        class="preview-button"
-        @click="previewReport"
-        :disabled="isPreviewLoading"
-      >
-        <template v-if="!isPreviewLoading">
-          <i class="preview-icon"></i>
-          预览报告
-        </template>
-        <template v-else>
-          <i class="loading-icon"></i>
-          生成中...
-        </template>
-      </button>
-      <button class="generate-button" @click="generateReport">
-        <i class="generate-icon"></i>
-        生成报告
-      </button>
     </div>
 
     <!-- 生成进度 -->
@@ -1370,5 +1366,73 @@ textarea:focus {
 
 .monthly-icon {
   background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/></svg>');
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.report-type-selector {
+  display: inline-flex;
+  gap: 10px;
+  padding: 5px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.type-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.preview-button,
+.generate-button {
+  padding: 8px 12px;
+  font-size: 0.85em;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.preview-button {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-light);
+  border: 1px solid var(--border-color);
+}
+
+.generate-button {
+  background: var(--primary-gradient);
+  color: white;
+}
+
+.preview-button:hover,
+.generate-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
 }
 </style>
