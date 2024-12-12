@@ -184,7 +184,7 @@ import { EventBus } from "../eventBus";
 import { aiManager } from "../services/ai/AIServiceFactory";
 import ReportPreviewDialog from '../components/ReportPreviewDialog.vue';
 import SuccessDialog from '../components/SuccessDialog.vue';
-import { ElMessage } from 'element-plus';
+import { ElMessageBox } from 'element-plus';
 import { formatDate } from '../utils/dateUtils';
 
 export default {
@@ -307,15 +307,9 @@ export default {
         this.showPreview = true;
       } catch (error) {
         console.error("预览报告失败:", error);
-        ElMessage({
-          message: error.message || '生成预览失败，请检查 AI 配置是否正确',
-          type: 'error',
-          duration: 5000,
-          showClose: true,
-          onClick: () => {
-            this.$emit('open-settings');
-          }
-        });
+        if (confirm('AI 配置有误，是否前往设置？')) {
+          this.$emit('open-settings');
+        }
       } finally {
         this.isPreviewLoading = false;
         this.isGenerating = false;
@@ -351,15 +345,9 @@ export default {
         }
       } catch (error) {
         console.error("生成报告失败:", error);
-        ElMessage({
-          message: '生成报告失败，请检查 AI 配置是否正确',
-          type: 'error',
-          duration: 5000,
-          showClose: true,
-          onClick: () => {
-            this.$emit('open-settings');
-          }
-        });
+        if (confirm('AI 配置有误，是否前往设置？')) {
+          this.$emit('open-settings');
+        }
       } finally {
         this.isGenerating = false;
         this.generationProgress = 0;
@@ -492,7 +480,7 @@ export default {
           projects: this.projects,
           selectedTags: this.selectedTags
         })
-        console.log('报告配置已保存')
+        console.log('报告配置保存')
       } catch (error) {
         console.error('保存报告配置失败:', error)
         throw error
@@ -1097,5 +1085,91 @@ textarea:focus {
   color: var(--text-light);
   font-size: 0.9em;
   min-height: 20px;
+}
+
+/* 修改错误图标大小和位置 */
+.el-message {
+  z-index: 9999;
+}
+
+.el-message .el-message__icon {
+  font-size: 16px !important;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+/* 确保消息提示框位置正确 */
+.el-message-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+}
+
+/* 调整错误消息样式 */
+.el-message--error {
+  background-color: rgba(245, 108, 108, 0.1);
+  border-color: rgba(245, 108, 108, 0.2);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+}
+
+/* 确保图标垂直居中 */
+.el-message__content {
+  display: flex;
+  align-items: center;
+  line-height: 1.4;
+}
+
+/* 添加以下 MessageBox 相关样式 */
+:deep(.el-message-box) {
+  max-width: 400px;
+  padding: 20px;
+}
+
+:deep(.el-message-box__header) {
+  padding: 15px 20px;
+}
+
+:deep(.el-message-box__title) {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+:deep(.el-message-box__content) {
+  padding: 20px;
+  font-size: 14px;
+}
+
+:deep(.el-message-box__btns) {
+  padding: 10px 20px 5px;
+}
+
+:deep(.el-message-box__status) {
+  position: static;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+  font-size: 18px !important;
+  transform: none;
+}
+
+:deep(.el-message-box__message) {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+:deep(.el-message-box__status.el-icon) {
+  font-size: 18px !important;
+  height: auto;
+  width: auto;
+}
+
+:deep(.el-overlay) {
+  background-color: rgba(0, 0, 0, 0.7);
 }
 </style>
