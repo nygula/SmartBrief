@@ -125,6 +125,14 @@
       </div>
     </div>
 
+    <LoadingDialog
+      v-model="showLoading"
+      :title="loadingTitle"
+      :message="loadingMessage"
+      :progress="generationProgress"
+      :show-progress="isGenerating"
+    />
+
     <ReportPreviewDialog v-model="showPreview" :content="previewContent" />
 
     <SuccessDialog v-model="showSuccessDialog" :file-path="generatedFilePath" />
@@ -139,12 +147,14 @@ import ReportPreviewDialog from "../components/ReportPreviewDialog.vue";
 import SuccessDialog from "../components/SuccessDialog.vue";
 import { ElMessageBox } from "element-plus";
 import { formatDate } from "../utils/dateUtils";
+import LoadingDialog from "../components/LoadingDialog.vue";
 
 export default {
   name: "ReportGenerate",
   components: {
     ReportPreviewDialog,
     SuccessDialog,
+    LoadingDialog,
   },
   data() {
     return {
@@ -179,6 +189,9 @@ export default {
       isPreviewLoading: false,
       showSuccessDialog: false,
       generatedFilePath: "",
+      showLoading: false,
+      loadingTitle: '请稍候',
+      loadingMessage: '正在处理中...',
     };
   },
   methods: {
@@ -282,7 +295,7 @@ export default {
         if (currentStep < steps.length && progressCallback.isLoading) {
           const { progress, status } = steps[currentStep];
           this.generationProgress = progress;
-          this.progressStatus = status;
+          this.loadingMessage = status;
           currentStep++;
           setTimeout(updateProgress, 800);
         }
@@ -308,7 +321,9 @@ export default {
       if (this.isPreviewLoading) return;
 
       this.isPreviewLoading = true;
-      this.progressStatus = "正在生成报告预览...";
+      this.showLoading = true;
+      this.loadingTitle = '生成预览';
+      this.loadingMessage = '正在生成报告预览...';
       this.isGenerating = true;
       this.generationProgress = 0;
 
@@ -321,14 +336,15 @@ export default {
         this.showPreview = true;
       } catch (error) {
         console.error("预览报告失败:", error);
-        if (confirm("AI 配置有误，是否前往设置？")) {
-          this.$emit("open-settings");
-        }
+        ElMessageBox.alert(error.message, "错误", {
+          type: "error",
+        });
       } finally {
         this.isPreviewLoading = false;
         this.isGenerating = false;
         this.generationProgress = 0;
         this.progressStatus = "";
+        this.showLoading = false;
       }
     },
 
@@ -336,7 +352,9 @@ export default {
       if (this.isGenerating) return;
 
       this.isGenerating = true;
-      this.progressStatus = "正在生成报告文件...";
+      this.showLoading = true;
+      this.loadingTitle = '生成报告';
+      this.loadingMessage = '正在处理中...';
       this.generationProgress = 0;
 
       try {
@@ -359,13 +377,14 @@ export default {
         }
       } catch (error) {
         console.error("生成报告失败:", error);
-        if (confirm("AI 配置有误，是否前往设置？")) {
-          this.$emit("open-settings");
-        }
+        ElMessageBox.alert(error.message, "错误", {
+          type: "error",
+        });
       } finally {
         this.isGenerating = false;
         this.generationProgress = 0;
         this.progressStatus = "";
+        this.showLoading = false;
       }
     },
 
