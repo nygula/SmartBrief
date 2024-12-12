@@ -149,38 +149,36 @@ class QianwenService extends BaseAIService {
   getHeaders() {
     return {
       'Authorization': `Bearer ${this.apiKey}`,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'User-Agent': 'SmartBrief/1.0.0'
     };
   }
 
   async generateCompletion(prompt) {
     const data = {
-      model: this.modelName,
-      messages: [
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature: 0.7
+      input: {
+        prompt: prompt
+      },
+      parameters: {},
+      debug: {}
     };
 
     try {
       const result = await this.makeRequest(this.url, data);
       // 通义千问 API 返回格式：
       // {
-      //   "id": "chatcmpl-67890",
-      //   "object": "chat.completion",
-      //   "created": 1677652288,
-      //   "choices": [{
-      //     "index": 0,
-      //     "message": { "role": "assistant", "content": "..." },
+      //   "output": {
+      //     "text": "...",
       //     "finish_reason": "stop"
-      //   }],
-      //   "usage": { "prompt_tokens": 9, "completion_tokens": 14, "total_tokens": 23 }
+      //   },
+      //   "usage": {
+      //     "total_tokens": 23
+      //   },
+      //   "request_id": "..."
       // }
-      if (result.choices?.[0]?.message?.content) {
-        return result.choices[0].message.content;
+
+      if (result.output?.text) {
+        return result.output.text;
       }
       throw new Error('通义千问 API 返回格式异常');
     } catch (error) {

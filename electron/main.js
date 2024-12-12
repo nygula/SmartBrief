@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron')
 const path = require('path')
 const fs = require('fs').promises
 const fsSync = require('fs')
@@ -69,6 +69,13 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js')
     }
   })
+
+  // 移除默认菜单栏
+  win.setMenu(null)
+  // 确保在 Windows 上也移除菜单栏
+  if (process.platform === 'win32') {
+    win.removeMenu()
+  }
 
   // 根据环境加载不同URL
   if (process.env.VITE_DEV_SERVER_URL) {
@@ -186,6 +193,9 @@ app.whenReady().then(async () => {
   // 初始化设置
   const settings = await initSettings()
   console.log('应用启动时的设置:', settings)
+  
+  // 设置应用级别的菜单为null
+  Menu.setApplicationMenu(null)
   
   // 创建窗口
   const mainWindow = createWindow()
