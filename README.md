@@ -99,10 +99,6 @@ SmartBrief 是一款基于 AI 的智能工作报告生成工具，可以自动�
 
 ## 🤝 参与贡献
 
-<div align="center">
-  <img src="https://contrib.rocks/image?repo=yourusername/smartbrief" />
-</div>
-
 欢迎参与项目贡献！请查看我们的[贡献指南](CONTRIBUTING.md)。
 
 ## 📄 开源协议
