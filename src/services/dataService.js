@@ -126,6 +126,37 @@ class DataService {
       }
     }
   }
+
+  async saveProjectConfig(projects) {
+    try {
+      // 创建一个只包含必要数据的干净对象
+      const cleanProjects = projects.map(project => ({
+        path: project.path,
+        startDate: project.startDate,
+        endDate: project.endDate
+      }));
+
+      await window.electronAPI.saveData({
+        fileName: 'project-config.json',
+        data: cleanProjects
+      });
+    } catch (error) {
+      console.error('保存项目配置失败:', error);
+      throw error;
+    }
+  }
+
+  async loadProjectConfig() {
+    try {
+      const result = await window.electronAPI.loadData({
+        fileName: 'project-config.json'
+      });
+      return result || [];
+    } catch (error) {
+      console.error('加载项目配置失败:', error);
+      return [];
+    }
+  }
 }
 
 export const dataService = new DataService()

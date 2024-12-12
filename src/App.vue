@@ -52,7 +52,7 @@
                 class="step-item" 
                 :class="{ 
                   active: currentRoute === '/',
-                  completed: currentRoute === '/report'
+                  completed: currentRoute === '/project-config' || currentRoute === '/report'
                 }"
                 @click="$router.push('/')"
               >
@@ -62,10 +62,22 @@
               </div>
               <div 
                 class="step-item"
+                :class="{ 
+                  active: currentRoute === '/project-config',
+                  completed: currentRoute === '/report'
+                }"
+                @click="$router.push('/project-config')"
+              >
+                <div class="step-number">2</div>
+                <div class="step-label">项目配置</div>
+                <div class="step-line"></div>
+              </div>
+              <div 
+                class="step-item"
                 :class="{ active: currentRoute === '/report' }"
                 @click="$router.push('/report')"
               >
-                <div class="step-number">2</div>
+                <div class="step-number">3</div>
                 <div class="step-label">生成报告</div>
               </div>
             </div>

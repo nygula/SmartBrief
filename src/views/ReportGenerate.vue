@@ -1,90 +1,34 @@
 <template>
   <div class="report-container">
-    <!-- 报告配置区域 -->
-    <div class="config-section">
+    <!-- 项目信息展示区域 -->
+    <div class="info-section">
       <div class="section-title">
-        <i class="report-icon"></i>
-        <h2>报告配置</h2>
+        <i class="info-icon"></i>
+        <h2>项目信息</h2>
       </div>
-
-      <div class="report-type-selector">
-        <label>报告类型</label>
-        <select v-model="config.reportType">
-          <option value="daily">日报</option>
-          <option value="weekly">周报</option>
-          <option value="monthly">月报</option>
-          <option value="custom">自定义</option>
-        </select>
-      </div>
-
-      <div class="projects-config">
-        <label>项目配置</label>
-        <div class="projects-list">
-          <div
-            v-for="(project, index) in projects"
-            :key="index"
-            class="project-item"
-          >
-            <div class="project-header">
-              <div class="directory-input">
-                <div class="path-display" :title="project.path">
-                  <span class="path-text">{{ formatPath(project.path) }}</span>
-                  <div class="path-tooltip">{{ project.path }}</div>
-                </div>
-                <button
-                  class="delete-btn"
-                  @click="removeProject(index)"
-                  title="删除项目"
-                >
-                  <span class="btn-content">
-                    <svg viewBox="0 0 24 24" width="16" height="16">
-                      <path
-                        fill="currentColor"
-                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-                      />
-                    </svg>
-                  </span>
-                </button>
-              </div>
-            </div>
-            <div class="project-dates">
-              <div class="date-range">
-                <input
-                  type="date"
-                  v-model="project.startDate"
-                  @change="(e) => handleProjectDateChange(index, 'start', e)"
-                />
-                <span class="date-separator">至</span>
-                <input
-                  type="date"
-                  v-model="project.endDate"
-                  @change="(e) => handleProjectDateChange(index, 'end', e)"
-                />
-              </div>
-            </div>
+      <div class="projects-info">
+        <div v-for="(project, index) in projects" :key="index" class="project-info-item">
+          <div class="project-path">{{ formatPath(project.path) }}</div>
+          <div class="project-period">
+            {{ project.startDate }} 至 {{ project.endDate }}
           </div>
-          <button class="add-project-btn" @click="openDirectoryDialog">
-            <i class="add-icon"></i>
-            添加项目
-          </button>
         </div>
       </div>
+    </div>
 
-      <div class="input-group">
-        <label>包含内容</label>
-        <div class="checkbox-group">
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="config.includeCommits" />
-            <span>代码提交</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="config.includeTasks" />
-            <span>任务进度</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="config.includeStats" />
-            <span>统计数据</span>
-          </label>
+    <!-- 任务数据展示区域 -->
+    <div class="task-section">
+      <div class="section-title">
+        <i class="task-icon"></i>
+        <h2>任务数据</h2>
+      </div>
+      <div class="tasks-info">
+        <div v-for="task in tasks" :key="task.id" class="task-info-item">
+          <div class="task-name">{{ task.name }}</div>
+          <div class="task-details">
+            <span class="task-priority">优先级: {{ task.priority }}</span>
+            <span class="task-progress">进度: {{ task.progress }}%</span>
+          </div>
         </div>
       </div>
     </div>
@@ -198,6 +142,7 @@ export default {
         customPrompt: "",
       },
       projects: [],
+      tasks: [],
       availableTags: [
         { id: 1, name: "代码质量" },
         { id: 2, name: "进度分析" },
@@ -209,7 +154,6 @@ export default {
       isGenerating: false,
       generationProgress: 0,
       progressStatus: "",
-      tasks: [],
       showPreview: false,
       previewContent: "",
       isPreviewLoading: false,
@@ -218,6 +162,26 @@ export default {
     };
   },
   methods: {
+    async loadProjectData() {
+      try {
+        const projectConfig = await dataService.loadProjectConfig();
+        if (Array.isArray(projectConfig)) {
+          this.projects = projectConfig;
+        }
+      } catch (error) {
+        console.error('加载项目配置失败:', error);
+      }
+    },
+
+    async loadTaskData() {
+      try {
+        const tasks = await dataService.loadTaskList();
+        this.tasks = tasks;
+      } catch (error) {
+        console.error('加载任务数据失败:', error);
+      }
+    },
+
     toggleTag(tagId) {
       if (!this.selectedTags) {
         this.selectedTags = [];
@@ -510,7 +474,6 @@ export default {
       try {
         await dataService.saveReportConfig({
           config: this.config,
-          projects: this.projects,
           selectedTags: this.selectedTags,
         });
         console.log("报告配置保存");
@@ -525,7 +488,6 @@ export default {
         const config = await dataService.loadReportConfig();
         if (config) {
           this.config = config.config || this.config;
-          this.projects = config.projects || [];
           this.selectedTags = config.selectedTags || [];
         }
         console.log("报告配置已加载");
@@ -536,7 +498,11 @@ export default {
   },
 
   async mounted() {
-    await this.loadReportConfig();
+    await Promise.all([
+      this.loadProjectData(),
+      this.loadTaskData(),
+      this.loadReportConfig()
+    ]);
     try {
       await this.initAIService();
     } catch (error) {
@@ -546,12 +512,6 @@ export default {
 
   watch: {
     config: {
-      deep: true,
-      handler() {
-        this.saveReportConfig();
-      },
-    },
-    projects: {
       deep: true,
       handler() {
         this.saveReportConfig();
@@ -1205,5 +1165,63 @@ textarea:focus {
 
 :deep(.el-overlay) {
   background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* 添加新的样式 */
+.info-section,
+.task-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 30px;
+  margin: 40px 0;
+  border: 1px solid var(--border-color);
+}
+
+.project-info-item,
+.task-info-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.project-path {
+  font-size: 1.1em;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+
+.project-period {
+  font-size: 0.9em;
+  color: var(--text-secondary);
+}
+
+.task-name {
+  font-size: 1.1em;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+
+.task-details {
+  display: flex;
+  gap: 20px;
+  font-size: 0.9em;
+  color: var(--text-secondary);
+}
+
+.info-icon,
+.task-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+}
+
+.info-icon {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23646cff"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>');
+}
+
+.task-icon {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23646cff"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>');
 }
 </style>
