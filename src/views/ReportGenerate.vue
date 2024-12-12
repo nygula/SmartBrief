@@ -1,5 +1,24 @@
 <template>
   <div class="report-container">
+    <!-- 报告类型选择 -->
+    <div class="report-type-section">
+      <div class="section-title">
+        <i class="type-icon"></i>
+        <h2>报告类型</h2>
+      </div>
+      <div class="report-type-selector">
+        <div 
+          v-for="type in reportTypes" 
+          :key="type.value"
+          :class="['type-item', { active: config.reportType === type.value }]"
+          @click="config.reportType = type.value"
+        >
+          <i :class="type.icon"></i>
+          <span>{{ type.label }}</span>
+        </div>
+      </div>
+    </div>
+
     <!-- 项目信息展示区域 -->
     <div class="info-section">
       <div class="section-title">
@@ -141,6 +160,11 @@ export default {
         aiDepth: "detailed",
         customPrompt: "",
       },
+      reportTypes: [
+        { value: 'daily', label: '日报', icon: 'daily-icon' },
+        { value: 'weekly', label: '周报', icon: 'weekly-icon' },
+        { value: 'monthly', label: '月报', icon: 'monthly-icon' }
+      ],
       projects: [],
       tasks: [],
       availableTags: [
@@ -207,37 +231,34 @@ export default {
 
       const reportTypePrompts = {
         daily: "请将以下内容整理成一份工作日报，突出今日完成的工作内容和进展：",
-        weekly:
-          "请将以下内容整理成一份工作周报，总结本周的主要工作成果和进展：",
-        monthly:
-          "请将以下内容整理成一份工作月报，系统总结本月的工作重点和成果：",
-        custom: "请将以下内容整理成工作报告：",
+        weekly: "请将以下内容整理成一份工作周报，总结本周的主要工作成果和进展：",
+        monthly: "请将以下内容整理成一份工作月报，系统总结本月的工作重点和成果："
       };
 
-      const reportTypePrompt =
-        reportTypePrompts[this.config.reportType] || reportTypePrompts.custom;
+      const reportTypePrompt = reportTypePrompts[this.config.reportType] || reportTypePrompts.weekly;
 
       const aiConfigText = `
-          分析深度: ${this.config.aiDepth}
-          ${this.config.customPrompt ? `自定义提示词: ${this.config.customPrompt}` : ""}
-          ${
-            this.selectedTags.length > 0
-              ? `关注点: ${this.getSelectedTagNames().join(", ")}`
-              : ""
-          }
-                `.trim();
+        报告类型: ${this.config.reportType}
+        分析深度: ${this.config.aiDepth}
+        ${this.config.customPrompt ? `自定义提示词: ${this.config.customPrompt}` : ""}
+        ${
+          this.selectedTags.length > 0
+            ? `关注点: ${this.getSelectedTagNames().join(", ")}`
+            : ""
+        }
+      `.trim();
 
-         const prompt = `
-          ${reportTypePrompt}
+      const prompt = `
+        ${reportTypePrompt}
 
-          === 任务进展 ===
-          ${taskText}
+        === 任务进展 ===
+        ${taskText}
 
-          === 代码提交记录 ===
-          ${gitLogText}
+        === 代码提交记录 ===
+        ${gitLogText}
 
-          === 分析要求 ===
-          ${aiConfigText}
+        === 分析要求 ===
+        ${aiConfigText}
       `.trim();
 
       return await aiManager.generateReport(prompt);
@@ -1222,6 +1243,69 @@ textarea:focus {
 }
 
 .task-icon {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23646cff"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>');
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23646cff"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>');
+}
+
+.report-type-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 40px;
+  border: 1px solid var(--border-color);
+}
+
+.report-type-selector {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.type-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.type-item:hover {
+  background: rgba(100, 108, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.type-item.active {
+  background: var(--primary-gradient);
+  border: none;
+  color: white;
+}
+
+.type-icon,
+.daily-icon,
+.weekly-icon,
+.monthly-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+}
+
+.type-icon {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23646cff"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>');
+}
+
+.daily-icon {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg>');
+}
+
+.weekly-icon {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>');
+}
+
+.monthly-icon {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/></svg>');
 }
 </style>

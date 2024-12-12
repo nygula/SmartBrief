@@ -62,11 +62,6 @@ class DataService {
           aiDepth: data.config.aiDepth,
           customPrompt: data.config.customPrompt
         },
-        projects: data.projects.map(project => ({
-          path: project.path,
-          startDate: project.startDate,
-          endDate: project.endDate
-        })),
         selectedTags: Array.isArray(data.selectedTags) ? [...data.selectedTags] : []
       }
 
