@@ -73,43 +73,49 @@ export default {
 
 .dialog-content {
   position: relative;
-  background: #222;
-  border-radius: 16px;
+  background: var(--bg-dark);
   padding: 30px;
-  width: 90%;
-  max-width: 500px;
+  border-radius: 16px;
   text-align: center;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  animation: dialog-slide-in 0.3s ease-out;
   border: 1px solid var(--border-color);
+  max-width: 90%;
+  width: 500px;
+  z-index: 1;
 }
 
 .success-icon {
   margin-bottom: 20px;
-  animation: scale-in 0.5s ease-out;
+}
+
+.success-icon svg {
+  fill: var(--primary-color);
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 h2 {
-  color: #4CAF50;
-  margin: 0 0 20px 0;
-  font-size: 1.8em;
+  margin: 0 0 20px;
+  font-size: 1.5em;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .file-path {
-  color: var(--text-light);
-  margin: 0 0 10px 0;
-  opacity: 0.8;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
 }
 
 .path-container {
-  background: #1a1a1a;
-  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
   border-radius: 8px;
-  margin-bottom: 25px;
   word-break: break-all;
-  color: var(--text-light);
+  margin-bottom: 25px;
   border: 1px solid var(--border-color);
-  font-family: monospace;
+  color: var(--text-light);
 }
 
 .dialog-footer {
@@ -131,7 +137,7 @@ h2 {
 }
 
 .primary-button {
-  background: #4CAF50;
+  background: var(--primary-gradient);
   color: white;
   border: none;
 }
@@ -145,7 +151,7 @@ h2 {
 .primary-button:hover,
 .secondary-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 0 15px rgba(100, 108, 255, 0.3);
 }
 
 .folder-icon {

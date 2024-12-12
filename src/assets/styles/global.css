@@ -176,7 +176,7 @@ button {
 /* 项目配置和生成报告页面的小标题样式 */
 .report-container .section-title h2,
 .project-config-container .section-title h2 {
-  font-size: calc(var(--font-size-lg) * 0.8) !important;
+  font-size: calc(var(--font-size-lg) * 1) !important;
   font-weight: 500 !important;
 }
 
