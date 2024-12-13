@@ -45,15 +45,18 @@ SmartBrief 是一款基于 AI 的智能工作报告生成桌面工具，可以�
 #### DEB包安装(Ubuntu/Debian)
 
 ### 使用步骤
+1️⃣  **填写大模型API 信息**
+![image](https://github.com/user-attachments/assets/4657c8dd-5c33-4abc-bacd-02bead95ba39)
 
-1️⃣ **导入任务数据**
+
+2️⃣ **导入任务数据**
    - 导入或填写任务数据信息
 
 <div align="center">
   <img src="image-5.png" width="800" style="border-radius: 10px; margin: 20px 0" />
 </div>
 
-2️⃣ **配置模板**
+3️⃣ **配置模板**
 
    -  导入本地Git项目
    -  选择报告模板
@@ -65,7 +68,7 @@ SmartBrief 是一款基于 AI 的智能工作报告生成桌面工具，可以�
   <img src="image-1.png" width="800" style="border-radius: 10px; margin: 20px 0" />
 </div>
 
-3️⃣ **一键生成**
+ 4️⃣ **一键生成**
 
    -  AI智能分析
    -  实时预览
