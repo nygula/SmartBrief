@@ -610,4 +610,23 @@ textarea:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(102, 102, 102, 0.1);
 }
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-tip {
+  position: absolute;
+  left: 0;
+  bottom: -20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+/* 调整输入框底部间距，为提示文本留出空间 */
+.setting-item {
+  margin-bottom: 28px;
+}
 </style> 
