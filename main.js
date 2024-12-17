@@ -5,6 +5,7 @@ const { initGitService } = require(path.join(__dirname, 'services/gitService'))
 const pathService = require('./services/pathService')
 const { saveData, loadData, ensureDirectories } = require('./services/storageService')
 const { exec } = require('child_process')
+const { spawn } = require('child_process')
 
 let mainWindow
 
@@ -337,6 +338,30 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('show-item-in-folder', async (event, filePath) => {
     shell.showItemInFolder(filePath);
+  });
+
+  ipcMain.handle('executeSvnCommand', async (event, { command, args }) => {
+    return new Promise((resolve, reject) => {
+      const svn = spawn('svn', [command, ...args]);
+      let output = '';
+      let errorOutput = '';
+
+      svn.stdout.on('data', (data) => {
+        output += data.toString();
+      });
+
+      svn.stderr.on('data', (data) => {
+        errorOutput += data.toString();
+      });
+
+      svn.on('close', (code) => {
+        if (code === 0) {
+          resolve(output);
+        } else {
+          reject(new Error(`SVN命令执行失败: ${errorOutput}`));
+        }
+      });
+    });
   });
 })
 

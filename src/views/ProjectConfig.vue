@@ -20,9 +20,31 @@
         </div>
         <div class="project-dates">
           <div class="date-range">
-            <input type="date" v-model="project.startDate" @change="(e) => handleProjectDateChange(index, 'start', e)"/>
+            <div class="datetime-input">
+              <input 
+                type="date" 
+                v-model="project.startDate"
+                @change="(e) => handleProjectDateChange(index, 'start', e)"
+              />
+              <input 
+                type="time" 
+                v-model="project.startTime" 
+                @change="(e) => handleProjectTimeChange(index, 'start', e)"
+              />
+            </div>
             <span class="date-separator">至</span>
-            <input type="date" v-model="project.endDate" @change="(e) => handleProjectDateChange(index, 'end', e)"/>
+            <div class="datetime-input">
+              <input 
+                type="date" 
+                v-model="project.endDate"
+                @change="(e) => handleProjectDateChange(index, 'end', e)"
+              />
+              <input 
+                type="time" 
+                v-model="project.endTime"
+                @change="(e) => handleProjectTimeChange(index, 'end', e)"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -60,8 +82,10 @@ export default {
         if (directory && !this.projects.some((p) => p.path === directory)) {
           this.projects.push({
             path: directory,
-            startDate: new Date().toISOString().split("T")[0],
-            endDate: new Date().toISOString().split("T")[0],
+            startDate: new Date().toISOString().split('T')[0],
+            startTime: '00:00',
+            endDate: new Date().toISOString().split('T')[0],
+            endTime: '23:59'
           });
         }
       } catch (error) {
@@ -84,6 +108,16 @@ export default {
         if (project.startDate > value) {
           project.startDate = value;
         }
+      }
+    },
+    handleProjectTimeChange(projectIndex, type, event) {
+      const value = event.target.value;
+      const project = this.projects[projectIndex];
+      
+      if (type === 'start') {
+        project.startTime = value;
+      } else {
+        project.endTime = value;
       }
     },
     async saveProjectConfig() {
@@ -315,5 +349,20 @@ export default {
   width: 24px;
   height: 24px;
   background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23646cff"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>');
+}
+
+.datetime-input {
+  display: flex;
+  gap: 8px;
+}
+
+.datetime-input input[type="time"] {
+  width: 120px;
+  padding: 10px 16px;
+  background: var(--input-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-light);
+  font-size: 0.9em;
 }
 </style> 
