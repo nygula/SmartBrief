@@ -71,19 +71,6 @@
         
         <div class="dialog-body">
           <div class="template-section">
-            <p class="tip-text">JSON格式示例：</p>
-            <pre class="json-template">
-{
-  "tasks": [
-    {
-      "name": "任务名称",
-      "priority": "高/中/低",
-      "hours": 8,
-      "progress": 0,
-      "notes": "备注信息"
-    }
-  ]
-}</pre>
             <button class="download-btn" @click="downloadJsonTemplate">
               <i class="download-icon"></i>
               下载JSON模板
@@ -274,14 +261,20 @@ export default {
     },
     
     convertExcelToTasks(data) {
-      return data.map(row => ({
-        id: Date.now() + Math.random(),
-        name: row['任务名称'] || row['name'],
-        priority: row['优先级'] || row['priority'] || '中',
-        hours: Number(row['工时'] || row['hours']) || 0,
-        progress: Number(row['进度'] || row['progress']) || 0,
-        notes: row['备注'] || row['notes'] || ''
-      }));
+      return data.map(row => {
+        let progress = Number(row['进度'] || row['progress']) || 0;
+        // 确保进度在 0-100 之间
+        progress = Math.min(Math.max(progress, 0), 100);
+        
+        return {
+          id: Date.now() + Math.random(),
+          name: row['任务名称'] || row['name'],
+          priority: row['优先级'] || row['priority'] || '中',
+          hours: Number(row['工时'] || row['hours']) || 0,
+          progress: progress,
+          notes: row['备注'] || row['notes'] || ''
+        };
+      });
     }
   }
 }

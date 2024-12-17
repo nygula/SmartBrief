@@ -26,15 +26,42 @@
 
     <!-- 添加任务表单 -->
     <div class="add-task-form">
-      <input type="text" v-model="newTask.name" placeholder="输入任务名称" />
-      <select v-model="newTask.priority">
-        <option value="高">高</option>
-        <option value="中">中</option>
-        <option value="低">低</option>
-      </select>
-      <input type="number" v-model="newTask.hours" placeholder="工时" />
-      <input type="number" v-model="newTask.progress" placeholder="进度" />
-      <input type="text" v-model="newTask.notes" placeholder="添加备注信息" />
+      <div class="form-item">
+        <label class="form-label">任务名称 <span class="required">*</span></label>
+        <input type="text" v-model="newTask.name" placeholder="输入任务名称" />
+      </div>
+      
+      <div class="form-item">
+        <label class="form-label">优先级</label>
+        <select v-model="newTask.priority">
+          <option value="高">高</option>
+          <option value="中">中</option>
+          <option value="低">低</option>
+        </select>
+      </div>
+      
+      <div class="form-item">
+        <label class="form-label">工时</label>
+        <input type="number" v-model="newTask.hours" placeholder="工时" min="0" />
+      </div>
+      
+      <div class="form-item">
+        <label class="form-label">进度</label>
+        <input 
+          type="number" 
+          v-model.number="newTask.progress" 
+          placeholder="进度" 
+          min="0" 
+          max="100"
+          @input="limitProgress"
+        />
+      </div>
+      
+      <div class="form-item">
+        <label class="form-label">备注</label>
+        <input type="text" v-model="newTask.notes" placeholder="添加备注信息" />
+      </div>
+      
       <button class="add-task-btn" @click="addTask">添加任务</button>
     </div>
 
@@ -145,6 +172,14 @@ export default {
     handleTasksImported(tasks) {
       this.tasks = tasks;
       this.$emit('tasks-updated', tasks);
+    },
+    
+    limitProgress() {
+      if (this.newTask.progress > 100) {
+        this.newTask.progress = 100;
+      } else if (this.newTask.progress < 0) {
+        this.newTask.progress = 0;
+      }
     }
   },
   
@@ -233,17 +268,27 @@ export default {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.add-task-form input,
-.add-task-form select {
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: var(--input-bg);
-  color: var(--text-primary);
+.form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.required {
+  color: #ff4757;
+  margin-left: 2px;
 }
 
 .add-task-btn {
-  padding: 8px 16px;
+  align-self: flex-end;
+  height: 32px;
+  padding: 0 16px;
   background: var(--primary-gradient);
   color: white;
   border: none;
@@ -255,6 +300,16 @@ export default {
 .add-task-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(100, 108, 255, 0.2);
+}
+
+.add-task-form input,
+.add-task-form select {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--text-primary);
 }
 
 .task-list-header {
