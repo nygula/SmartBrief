@@ -50,7 +50,7 @@
       </div>
       <button class="add-project-btn" @click="openDirectoryDialog">
       <i class="add-icon"></i>
-      <span>选择Git项目目录</span>
+      <span>选择Git工程目录</span>
       <small class="btn-tip">选择需要分析的代码仓库目录</small>
     </button>
     </div>

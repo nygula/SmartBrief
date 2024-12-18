@@ -395,8 +395,16 @@ export default {
     async getGitLogs() {
       const logs = [];
       for (const project of this.projects) {
-        const { startDate, endDate, path } = project;
-        const log = await this.runGitCommand(path, startDate, endDate);
+        const { startDate, endDate, path, startTime = "00:00", endTime = "23:59" } = project;
+        
+        // 组合日期和时间
+        const startDateTime = `${startDate}T${startTime}:00`;
+        const endDateTime = `${endDate}T${endTime}:00`;
+        
+        console.log("完整开始时间:", startDateTime);
+        console.log("完整结束时间:", endDateTime);
+        
+        const log = await this.runGitCommand(path, startDateTime, endDateTime);
         logs.push(`项目: ${path}\n${log}`);
       }
       return logs;
@@ -418,6 +426,7 @@ export default {
           return mockData;
         }
 
+        // 转换为 ISO 格式的时间戳
         const start = new Date(startDate).toISOString();
         const end = new Date(endDate).toISOString();
         
@@ -521,7 +530,7 @@ export default {
         }
         console.log("报告配置已加载");
       } catch (error) {
-        console.error("加载报告配���失败:", error);
+        console.error("加载报告配置失败:", error);
       }
     },
   },
