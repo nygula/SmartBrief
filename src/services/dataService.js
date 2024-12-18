@@ -124,11 +124,12 @@ class DataService {
 
   async saveProjectConfig(projects) {
     try {
-      // 创建一个只包含必要数据的干净对象
       const cleanProjects = projects.map(project => ({
         path: project.path,
         startDate: project.startDate,
-        endDate: project.endDate
+        startTime: project.startTime || '00:00',
+        endDate: project.endDate,
+        endTime: project.endTime || '23:59'
       }));
 
       await window.electronAPI.saveData({

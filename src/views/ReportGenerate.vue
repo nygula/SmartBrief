@@ -406,8 +406,8 @@ export default {
       try {
         console.log("开始获取Git提交数据:");
         console.log(`目录: ${directory}`);
-        console.log(`开始日期: ${startDate}`);
-        console.log(`结束日期: ${endDate}`);
+        console.log(`开始日期时间: ${startDate}`);
+        console.log(`结束日期时间: ${endDate}`);
 
         if (!window.electronAPI?.executeCommand) {
           console.warn("executeCommand API未定义,使用模拟数据");
@@ -415,13 +415,13 @@ export default {
             `模拟的Git日志数据 (${startDate} 至 ${endDate})\n` +
             `2024-03-15 [开发者] 示例提交信息\n` +
             `2024-03-14 [开发者] 另一个示例提交`;
-          console.log("模拟数据:", mockData);
           return mockData;
         }
 
-        const start = new Date(startDate).toISOString().split("T")[0];
-        const end = new Date(endDate).toISOString().split("T")[0];
-        const command = `git log --pretty=format:"%ad [%an] %s" --date=format:"%Y-%m-%d %H:%M" --since="${start}" --until="${end}"`;
+        const start = new Date(startDate).toISOString();
+        const end = new Date(endDate).toISOString();
+        
+        const command = `git log --pretty=format:"%ad [%an] %s" --date=iso-strict --since="${start}" --until="${end}"`;
 
         console.log("执行Git命令:", command);
 
@@ -435,14 +435,7 @@ export default {
           return `获取Git日志出现问题: ${result.error}`;
         }
 
-        console.log("获取到的Git日志:", result.output);
-
-        if (!result.output.trim()) {
-          console.log(`${start} 至 ${end} 期间没有提交记录`);
-          return `该时间段内没有提交记录 (${start} 至 ${end})`;
-        }
-
-        return result.output;
+        return result.output || `该时间段内没有提交记录 (${start} 至 ${end})`;
       } catch (error) {
         console.error("执行Git命令失败:", error);
         return `获取Git日志失败: ${error.message}`;
@@ -528,7 +521,7 @@ export default {
         }
         console.log("报告配置已加载");
       } catch (error) {
-        console.error("加载报告配置失败:", error);
+        console.error("加载报告配���失败:", error);
       }
     },
   },
@@ -759,7 +752,7 @@ textarea:focus {
   font-size: 0.9em;
 }
 
-/* 图标样式 */
+/* ��标样式 */
 .report-icon,
 .ai-icon,
 .preview-icon,
