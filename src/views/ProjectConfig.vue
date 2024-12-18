@@ -49,9 +49,10 @@
         </div>
       </div>
       <button class="add-project-btn" @click="openDirectoryDialog">
-        <i class="add-icon"></i>
-        添加项目
-      </button>
+      <i class="add-icon"></i>
+      <span>选择Git项目目录</span>
+      <small class="btn-tip">选择需要分析的代码仓库目录</small>
+    </button>
     </div>
   </div>
 </template>
@@ -319,23 +320,32 @@ export default {
 }
 
 .add-project-btn {
-  align-self: flex-start;
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  background: var(--primary-gradient);
-  border: none;
+  padding: 16px;
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border-color);
   border-radius: 8px;
-  color: white;
-  font-size: 0.9em;
   cursor: pointer;
   transition: all 0.3s ease;
+  color: white;
 }
 
 .add-project-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
+  border-color: var(--primary-color);
+  background: rgba(100, 108, 255, 0.04);
+  color: white;
+}
+
+
+.btn-tip {
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  opacity: 0.8;
 }
 
 .add-icon {
