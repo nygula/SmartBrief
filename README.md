@@ -22,7 +22,10 @@ SmartBrief 是一款基于 AI 的智能工作报告生成桌面工具，可以�
 + 🌈 **界面美观** - 现代化深色主题 UI 设计
 
 ## 📦 安装使用
-## 🌟 下载�����装
+## 🌟 下载安装
+
+![](https://cdn.nlark.com/yuque/0/2024/png/661183/1734602533443-e1f901fa-5212-48de-a18b-d0d237d42bdc.png)
+
 ### Windows 系统
 1. 下载 `SmartBrief-Setup-win.exe`
 2. 双击安装包进行安装
