@@ -611,6 +611,18 @@ export default {
   gap: 8px;
 }
 
+.input-group label {
+  font-size: 0.9em;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+/* 调整标签容器的高度和对齐方式 */
+.input-group .tag-selector {
+  min-height: 38px;
+  align-items: center;
+}
+
 .input-group.full-width {
   grid-column: 1 / -1;
 }
@@ -670,30 +682,41 @@ textarea:focus {
 
 .tag-selector {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-x: hidden; /* IE/Edge */
+}
+
+/* 隐藏滚动条但保持可滚动 */
+.tag-selector::-webkit-scrollbar {
+  display: none;
 }
 
 .tag {
+  flex: 0 0 auto;
   padding: 6px 12px;
-  border-radius: 20px;
-  background: rgba(100, 108, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
-  color: var(--text-light);
+  border-radius: 6px;
+  font-size: 0.9em;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .tag:hover {
-  background: rgba(100, 108, 255, 0.2);
-  transform: translateY(-2px);
+  background: rgba(100, 108, 255, 0.1);
+  transform: translateY(-1px);
 }
 
 .tag.active {
   background: var(--primary-gradient);
-  color: white;
   border: none;
-  box-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
+  color: white;
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
 }
 
 .action-buttons {
@@ -761,7 +784,7 @@ textarea:focus {
   font-size: 0.9em;
 }
 
-/* ��标样式 */
+/* 标样式 */
 .report-icon,
 .ai-icon,
 .preview-icon,
@@ -1455,5 +1478,26 @@ textarea:focus {
 .generate-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
+}
+
+.tag-container {
+  position: relative;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+/* 添加渐变遮罩效果 */
+.tag-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 30px;
+  background: linear-gradient(to right, transparent, var(--bg-secondary));
+  pointer-events: none;
+  opacity: 0.8;
+  border-radius: 0 8px 8px 0;
 }
 </style>
