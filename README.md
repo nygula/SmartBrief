@@ -22,7 +22,7 @@ SmartBrief 是一款基于 AI 的智能工作报告生成桌面工具，可以�
 + 🌈 **界面美观** - 现代化深色主题 UI 设计
 
 ## 📦 安装使用
-## 🌟 下载安装
+## 🌟 下载�����装
 ### Windows 系统
 1. 下载 `SmartBrief-Setup-win.exe`
 2. 双击安装包进行安装
@@ -67,10 +67,10 @@ SmartBrief 是一款基于 AI 的智能工作报告生成桌面工具，可以�
 
 ## 🛠️ 技术栈
 
-<div align="center">
+<div align="center" style="width: 100%; max-width: 800px; margin: 0 auto;">
 
 | 🏗️ 框架 | 🎨 UI | 🔧 工具 |
-|---------|-------|---------|
+|:-------------:|:-------------:|:-------------:|
 | ![Electron](https://img.shields.io/badge/-Electron-47848F?style=flat-square&logo=electron&logoColor=white) | ![Vue.js](https://img.shields.io/badge/-Vue.js-4FC08D?style=flat-square&logo=vue.js&logoColor=white) | ![Vite](https://img.shields.io/badge/-Vite-646CFF?style=flat-square&logo=vite&logoColor=white) |
 | ![JavaScript](https://img.shields.io/badge/-JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black) | ![Element Plus](https://img.shields.io/badge/-Element%20Plus-409EFF?style=flat-square&logo=element&logoColor=white) | ![Git](https://img.shields.io/badge/-Git-F05032?style=flat-square&logo=git&logoColor=white) |
 | ![Vue Router](https://img.shields.io/badge/-Vue%20Router-42B983?style=flat-square&logo=vue.js&logoColor=white) | ![DOMPurify](https://img.shields.io/badge/-DOMPurify-6F42C1?style=flat-square) | ![Simple Git](https://img.shields.io/badge/-Simple%20Git-F05032?style=flat-square&logo=git&logoColor=white) |
@@ -98,10 +98,12 @@ SmartBrief 是一款基于 AI 的智能工作报告生成桌面工具，可以�
 ## 🤝 参与贡献
 欢迎参与项目贡献！请查看我们的[贡献指南](CONTRIBUTING.md)。
 
-## 📄 开源��议
- MIT License © 2024 [Estelle925](https://github.com/Estelle925)
+## 📄 开源协议
+[MIT License](https://github.com/Estelle925/SmartBrief/blob/main/LICENSE) © 2024 [Estelle925](https://github.com/Estelle925)
 
 ---
 
-   **用 ****❤️**** 打造**
+<p align="center" style="margin-top: 40px; color: #666;">
+   <b>用 ❤️ 打造</b>
+</p>
 
