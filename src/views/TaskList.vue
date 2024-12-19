@@ -77,7 +77,27 @@
 
     <!-- 任务列表内容 -->
     <div class="task-items">
-      <!-- 现有的任务列表内容 -->
+      <div v-for="task in tasks" :key="task.id" class="task-item">
+        <div class="task-name">{{ task.name }}</div>
+        <div class="priority">
+          <span :class="['priority-tag', task.priority]">{{ task.priority }}</span>
+        </div>
+        <div class="hours">{{ task.hours }}h</div>
+        <div class="progress">
+          <div class="progress-bar">
+            <div 
+              class="progress-fill"
+              :style="{ width: `${task.progress}%` }"
+              :class="{ 'completed': task.progress === 100 }"
+            ></div>
+          </div>
+          <span class="progress-text">{{ task.progress }}%</span>
+        </div>
+        <div class="notes">{{ task.notes }}</div>
+        <div class="actions">
+          <button class="delete-btn" @click="deleteTask(task.id)">删除</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -317,12 +337,116 @@ export default {
   grid-template-columns: 2fr 1fr 1fr 1fr 2fr auto;
   gap: 12px;
   padding: 12px 16px;
-  background: var(--bg-primary);
-  border-radius: 8px;
-  margin-bottom: 12px;
+  background: linear-gradient(90deg, #8B5CF6 0%, #A855F7 100%);
+  border-radius: 12px 12px 0 0;
+  margin-bottom: 0;
   font-weight: 500;
+}
+
+.task-list-header > div {
+  font-size: 14px;
+  font-weight: 500;
+  color: #FFFFFF;
+}
+
+.task-items {
+  background: var(--bg-primary);
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+  margin-top: 0;
+}
+
+.task-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 2fr auto;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  align-items: center;
+}
+
+.task-item:last-child {
+  border-bottom: none;
+}
+
+.task-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.priority-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.priority-tag.高 {
+  background: rgba(255, 71, 87, 0.2);
+  color: #ff4757;
+}
+
+.priority-tag.中 {
+  background: rgba(255, 165, 2, 0.2);
+  color: #ffa502;
+}
+
+.priority-tag.低 {
+  background: rgba(46, 213, 115, 0.2);
+  color: #2ed573;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary-gradient);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-fill.completed {
+  background: linear-gradient(135deg, #2ed573 0%, #7bed9f 100%);
+}
+
+.progress-text {
+  font-size: 12px;
   color: var(--text-secondary);
 }
 
-/* 其他现有样式保持不变 */
+.delete-btn {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 4px;
+  background: rgba(255, 71, 87, 0.1);
+  color: #ff4757;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 12px;
+}
+
+.delete-btn:hover {
+  background: rgba(255, 71, 87, 0.2);
+  transform: translateY(-1px);
+}
+
+.hours {
+  color: var(--text-secondary);
+  font-size: 0.9em;
+}
+
+.notes {
+  color: var(--text-secondary);
+  font-size: 0.9em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 </style> 
