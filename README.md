@@ -1,4 +1,4 @@
-# 智能简报 
+
 <div style="display: flex; align-items: center; gap: 20px;">
   <img src="https://cdn.nlark.com/yuque/0/2024/png/661183/1734601639083-1b42e583-6b4d-4a9e-9499-c08315303ffc.png" alt="智能简报" style="height: 100px;"/>
   <div style="margin: 0;">
@@ -99,7 +99,7 @@ SmartBrief 是一款基于 AI 的智能工作报告生成桌面工具，可以�
     - Electron Store - 数据持久化存储
 
 ## 🤝 参与贡献
-欢迎参与项目贡献！请查看我们的[贡献指南](CONTRIBUTING.md)。
+欢迎参与项目贡献！
 
 ## 📄 开源协议
 [MIT License](https://github.com/Estelle925/SmartBrief/blob/main/LICENSE) © 2024 [Estelle925](https://github.com/Estelle925)
