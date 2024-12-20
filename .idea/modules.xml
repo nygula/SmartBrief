@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ai-report-tool.iml" filepath="$PROJECT_DIR$/.idea/ai-report-tool.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/SmartBrief.iml" filepath="$PROJECT_DIR$/.idea/SmartBrief.iml" />
     </modules>
   </component>
 </project>

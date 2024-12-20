@@ -227,48 +227,30 @@ export default {
       }
     },
     async generateReportContent() {
+      const currentModel = await this.getCurrentAIModel();
+      const modelPrompts = MODEL_PROMPTS[currentModel] || MODEL_PROMPTS.gpt;
+      
       const tasks = await this.getTaskListData();
       const taskText = tasks
-        .map(
-          (task) =>
-            `任务: ${task.name}, 优先级: ${task.priority}, 进度: ${task.progress}%`
-        )
+        .map(task => `任务: ${task.name}, 优先级: ${task.priority}, 进度: ${task.progress}%`)
         .join("\n");
 
       const gitLogs = await this.getGitLogs();
       const gitLogText = gitLogs.join("\n");
 
-      const reportTypePrompts = {
-        daily: "请将以下内容整理成一份工作日报，突出今日完成的工作内容和进展：",
-        weekly: "请将以下内容整理成一份工作周报，总结本周的主要工作成果和进展：",
-        monthly: "请将以下内容整理成一份工作月报，系统总结本月的工作重点和成果："
-      };
+      // 获取当前模型的提示词
+      const reportTypePrompt = modelPrompts[this.config.reportType] || modelPrompts.weekly;
 
-      const reportTypePrompt = reportTypePrompts[this.config.reportType] || reportTypePrompts.weekly;
+      // 根据不同模型构建分析配置文本
+      const aiConfigText = this.buildAIConfigText(currentModel);
 
-      const aiConfigText = `
-        报告类型: ${this.config.reportType}
-        分析深度: ${this.config.aiDepth}
-        ${this.config.customPrompt ? `自定义提示词: ${this.config.customPrompt}` : ""}
-        ${
-          this.selectedTags.length > 0
-            ? `关注点: ${this.getSelectedTagNames().join(", ")}`
-            : ""
-        }
-      `.trim();
-
-      const prompt = `
-        ${reportTypePrompt}
-
-        === 任务进展 ===
-        ${taskText}
-
-        === 代码提交记录 ===
-        ${gitLogText}
-
-        === 分析要求 ===
-        ${aiConfigText}
-      `.trim();
+      const prompt = this.buildPromptTemplate(
+        currentModel,
+        reportTypePrompt,
+        taskText,
+        gitLogText,
+        aiConfigText
+      );
 
       return await aiManager.generateReport(prompt);
     },
@@ -533,6 +515,48 @@ export default {
         console.error("加载报告配置失败:", error);
       }
     },
+
+    async getCurrentAIModel() {
+      const settings = await window.electronAPI.loadSettings();
+      return settings?.model || 'gpt';
+    },
+
+    buildAIConfigText(model) {
+      const configTexts = {
+        qwen: `分析要求：
+          分析深度：${this.config.aiDepth}
+          ${this.config.customPrompt ? `补充说明：${this.config.customPrompt}` : ""}
+          ${this.selectedTags.length > 0 ? `重点关注：${this.getSelectedTagNames().join("、")}` : ""}`,
+        
+        ernie: `请按以下要求进行分析：
+          分析深度：${this.config.aiDepth}
+          ${this.config.customPrompt ? `特别说明：${this.config.customPrompt}` : ""}
+          ${this.selectedTags.length > 0 ? `关注重点：${this.getSelectedTagNames().join("、")}` : ""}`,
+        
+        gpt: `Analysis Requirements:
+          Depth: ${this.config.aiDepth}
+          ${this.config.customPrompt ? `Custom Instructions: ${this.config.customPrompt}` : ""}
+          ${this.selectedTags.length > 0 ? `Focus Areas: ${this.getSelectedTagNames().join(", ")}` : ""}`,
+        
+        doubao: `分析维度：
+          深度要求：${this.config.aiDepth}
+          ${this.config.customPrompt ? `补充要求：${this.config.customPrompt}` : ""}
+          ${this.selectedTags.length > 0 ? `关注点：${this.getSelectedTagNames().join("，")}` : ""}`
+      };
+      
+      return configTexts[model] || configTexts.gpt;
+    },
+
+    buildPromptTemplate(model, reportTypePrompt, taskText, gitLogText, aiConfigText) {
+      const templates = {
+        qwen: `${reportTypePrompt}\n\n【任务进展】\n${taskText}\n\n【代码提交】\n${gitLogText}\n\n【分析要求】\n${aiConfigText}`,
+        ernie: `${reportTypePrompt}\n\n==任务进展==\n${taskText}\n\n==代码提交==\n${gitLogText}\n\n==分析要求==\n${aiConfigText}`,
+        gpt: `${reportTypePrompt}\n\n# Tasks Progress\n${taskText}\n\n# Code Commits\n${gitLogText}\n\n# Analysis Requirements\n${aiConfigText}`,
+        doubao: `${reportTypePrompt}\n\n---任务进展---\n${taskText}\n\n---代码提交---\n${gitLogText}\n\n---分析要求---\n${aiConfigText}`
+      };
+      
+      return templates[model] || templates.gpt;
+    }
   },
 
   async mounted() {
