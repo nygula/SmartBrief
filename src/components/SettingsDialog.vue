@@ -29,6 +29,9 @@
                 <option value="doubao">豆包</option>
                 <option value="qianwen">通义千问</option>
                 <option value="wenxin">文心一言</option>
+                <option value="ollama">ollama</option>
+                <option value="gpustack">gpustack</option>
+
               </select>
             </div>
 
@@ -89,7 +92,9 @@ export default {
         chatgpt: 'https://api.openai.com/v1',
         doubao: 'https://api.doubao.com/v1',
         qianwen: 'https://dashscope.aliyuncs.com/api/v1',
-        wenxin: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop'
+        wenxin: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop',
+        ollama: 'http://127.0.0.1:11434/v1',
+        gpustack: 'http://127.0.0.1:8080/v1-openai'
       }
       return placeholders[this.settings.api.modelType] || ''
     },
@@ -99,7 +104,9 @@ export default {
         chatgpt: 'gpt-3.5-turbo',
         doubao: 'dbchat-1',
         qianwen: 'qwen-turbo',
-        wenxin: 'ernie-bot'
+        wenxin: 'ernie-bot',
+        ollama: 'qwen2',
+        gpustack: 'deepseek-r1'
       }
       return placeholders[this.settings.api.modelType] || ''
     }

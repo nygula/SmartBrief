@@ -541,7 +541,17 @@ export default {
         doubao: `分析维度：
           深度要求：${this.config.aiDepth}
           ${this.config.customPrompt ? `补充要求：${this.config.customPrompt}` : ""}
+          ${this.selectedTags.length > 0 ? `关注点：${this.getSelectedTagNames().join("，")}` : ""}`,
+
+          ollama: `分析维度：
+          深度要求：${this.config.aiDepth}
+          ${this.config.customPrompt ? `补充要求：${this.config.customPrompt}` : ""}
+          ${this.selectedTags.length > 0 ? `关注点：${this.getSelectedTagNames().join("，")}` : ""}`,
+          gpustack: `分析维度：
+          深度要求：${this.config.aiDepth}
+          ${this.config.customPrompt ? `补充要求：${this.config.customPrompt}` : ""}
           ${this.selectedTags.length > 0 ? `关注点：${this.getSelectedTagNames().join("，")}` : ""}`
+
       };
       
       return configTexts[model] || configTexts.gpt;
@@ -553,6 +563,9 @@ export default {
         ernie: `${reportTypePrompt}\n\n==任务进展==\n${taskText}\n\n==代码提交==\n${gitLogText}\n\n==分析要求==\n${aiConfigText}`,
         gpt: `${reportTypePrompt}\n\n# Tasks Progress\n${taskText}\n\n# Code Commits\n${gitLogText}\n\n# Analysis Requirements\n${aiConfigText}`,
         doubao: `${reportTypePrompt}\n\n---任务进展---\n${taskText}\n\n---代码提交---\n${gitLogText}\n\n---分析要求---\n${aiConfigText}`
+        ollama: `${reportTypePrompt}\n\n---任务进展---\n${taskText}\n\n---代码提交---\n${gitLogText}\n\n---分析要求---\n${aiConfigText}`
+        gpustack: `${reportTypePrompt}\n\n---任务进展---\n${taskText}\n\n---代码提交---\n${gitLogText}\n\n---分析要求---\n${aiConfigText}`
+
       };
       
       return templates[model] || templates.gpt;

@@ -21,6 +21,12 @@ class AIServiceFactory {
       case 'wenxin':
         this.service = new WenxinService(url, apiKey, modelName);
         break;
+      case 'ollama':
+          this.service = new OllamaService(url, apiKey, modelName);
+          break;
+      case 'gpustack':
+          this.service = new GPUstackService(url, apiKey, modelName);
+          break;
       default:
         throw new Error('不支持的模型类型');
     }
@@ -222,5 +228,68 @@ class WenxinService extends BaseAIService {
     }
   }
 }
+
+
+// Ollama 服务实现
+class OllamaService extends BaseAIService {
+  async generateCompletion(prompt) {
+    const data = {
+      model: this.modelName,
+      prompt: prompt,
+      options: {
+        temperature: 0.7,
+        max_tokens: 1000
+      }
+    };
+
+    try {
+      const result = await this.makeRequest(this.url, data);
+      // Ollama API 返回格式：
+      // {
+      //   "response": "生成的文本内容",
+      //   "usage": { "prompt_tokens": 10, "completion_tokens": 20, "total_tokens": 30 }
+      // }
+      if (result?.response) {
+        return result.response;
+      }
+      throw new Error('Ollama API 返回格式异常');
+    } catch (error) {
+      console.error('解析 Ollama 响应失败:', error);
+      throw error;
+    }
+  }
+}
+
+
+// GPUstark 服务实现
+class GPUstackService extends BaseAIService {
+  async generateCompletion(prompt) {
+    const data = {
+      query: prompt,
+      model: this.modelName,
+      options: {
+        temperature: 0.7,
+        max_tokens: 1500
+      }
+    };
+
+    try {
+      const result = await this.makeRequest(this.url, data);
+      // GPUstark API 返回格式：
+      // {
+      //   "result": "生成的文本内容",
+      //   "metadata": { "usage": { "prompt_tokens": 12, "completion_tokens": 18, "total_tokens": 30 } }
+      // }
+      if (result?.result) {
+        return result.result;
+      }
+      throw new Error('GPUstark API 返回格式异常');
+    } catch (error) {
+      console.error('解析 GPUstark 响应失败:', error);
+      throw error;
+    }
+  }
+}
+
 
 export const aiManager = new AIServiceFactory(); 
